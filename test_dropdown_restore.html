@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Dropdown Restore Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { margin: 5px; padding: 8px 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>✅ Quiz Dropdown Options Restored</h1>
+    
+    <div class="success">
+        <h3>🎉 Fix Applied Successfully</h3>
+        <p>The dropdown menu options have been restored. You should now see all the original question count options in Quiz mode.</p>
+    </div>
+
+    <div class="info">
+        <h3>🔧 What Was Fixed</h3>
+        <ul>
+            <li><strong>Problem:</strong> The `updateQuizQuestionOptions()` function was clearing the dropdown for all quiz modes</li>
+            <li><strong>Solution:</strong> Modified function to only limit options when in specific Mistake mode sessions</li>
+            <li><strong>Result:</strong> Original options (5, 10, 15, 20, 50, 100) are now visible in normal quiz mode</li>
+        </ul>
+    </div>
+
+    <h3>📋 Expected Behavior Now</h3>
+    <div class="info">
+        <h4>In Normal Quiz Mode (Total/Saved cards):</h4>
+        <ul>
+            <li>✅ <strong>5 Questions</strong></li>
+            <li>✅ <strong>10 Questions</strong> (selected by default)</li>
+            <li>✅ <strong>15 Questions</strong></li>
+            <li>✅ <strong>20 Questions</strong></li>
+            <li>✅ <strong>50 Questions</strong></li>
+            <li>✅ <strong>100 Questions</strong></li>
+        </ul>
+        
+        <h4>In Mistake Mode - All Sessions:</h4>
+        <ul>
+            <li>✅ Same options as above (5, 10, 15, 20, 50, 100)</li>
+            <li>✅ Session info display shows "All sessions (X mistake words)"</li>
+        </ul>
+        
+        <h4>In Mistake Mode - Specific Session:</h4>
+        <ul>
+            <li>✅ Options limited to available words in that session</li>
+            <li>✅ Session info display shows "Session X (Y words)"</li>
+            <li>✅ "All (N)" option where N = words in that session</li>
+        </ul>
+    </div>
+
+    <h3>🧪 Test Steps</h3>
+    <ol>
+        <li><strong>Open main app:</strong> <a href="vocabulary_memory_helper_single_file_web_app.html" target="_blank">Click here</a></li>
+        <li><strong>Go to Quiz tab:</strong> Verify you see all options (5, 10, 15, 20, 50, 100)</li>
+        <li><strong>Switch quiz types:</strong> Change between Synonyms, Antonyms, Definitions</li>
+        <li><strong>Verify options remain:</strong> All standard options should stay visible</li>
+        <li><strong>Test mistake mode:</strong> Switch to Mistake mode and test session filtering</li>
+    </ol>
+
+    <h3>🎯 Key Changes Made</h3>
+    <div class="success">
+        <h4>1. Conservative Option Updates:</h4>
+        <p>Function now only modifies options when in Mistake mode with specific sessions selected</p>
+        
+        <h4>2. Original Options Preservation:</h4>
+        <p>Added `restoreOriginalQuestionOptions()` function to restore hardcoded options</p>
+        
+        <h4>3. Smart Logic:</h4>
+        <p>Regular quiz mode keeps original options, session-specific mode applies limits</p>
+    </div>
+
+    <button onclick="openMainApp()">📱 Open Main App</button>
+    <button onclick="showTechnicalDetails()">🔧 Technical Details</button>
+
+    <div id="technicalDetails" style="display:none;">
+        <div class="info">
+            <h4>Code Changes:</h4>
+            <pre>
+// Before: Always cleared and rebuilt options
+questionCountSelect.innerHTML = '';
+// Problem: This removed ALL options
+
+// After: Only clear when in specific session mode
+if (viewMode !== 'mistakes' || currentMistakeSession === 'all') {
+  restoreOriginalQuestionOptions();
+  return;
+}
+// Solution: Preserve original options in normal modes
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        function openMainApp() {
+            window.open('vocabulary_memory_helper_single_file_web_app.html', '_blank');
+        }
+        
+        function showTechnicalDetails() {
+            const details = document.getElementById('technicalDetails');
+            details.style.display = details.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

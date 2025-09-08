@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Options Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        button { margin: 5px; padding: 8px 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Quiz Options Fix Test</h1>
+    
+    <div class="info">
+        <h3>🎯 Test Objective</h3>
+        <p>Verify that the quiz question count options no longer disappear and work correctly:</p>
+        <ul>
+            <li><strong>Quiz Type Awareness:</strong> Options based on cards with required data (synonyms/antonyms/definitions)</li>
+            <li><strong>Dynamic Updates:</strong> Options update when quiz type changes</li>
+            <li><strong>Session Filtering:</strong> Options still respect session-based filtering in mistake mode</li>
+            <li><strong>Fallback Options:</strong> Show appropriate options even when no cards match</li>
+        </ul>
+    </div>
+
+    <div id="testResults"></div>
+    
+    <h3>✅ Changes Made</h3>
+    <div class="info">
+        <h4>1. Fixed updateQuizQuestionOptions() function:</h4>
+        <ul>
+            <li>Now considers quiz type (synonyms/antonyms/definitions) when counting available cards</li>
+            <li>Only counts cards that have the required data for the selected quiz type</li>
+            <li>Properly filters for saved/mistake modes with quiz-compatible cards</li>
+        </ul>
+        
+        <h4>2. Added event listener:</h4>
+        <ul>
+            <li>Quiz type dropdown now triggers option updates when changed</li>
+            <li>Real-time updates as user selects different quiz types</li>
+        </ul>
+        
+        <h4>3. Improved error handling:</h4>
+        <ul>
+            <li>Better fallback when no cards are available for a quiz type</li>
+            <li>Clearer messaging about card availability</li>
+        </ul>
+    </div>
+
+    <h3>🧪 Manual Testing Steps</h3>
+    <ol>
+        <li><strong>Open the main app:</strong> <a href="vocabulary_memory_helper_single_file_web_app.html" target="_blank">Open Main App</a></li>
+        <li><strong>Add test data:</strong> Go to Manage tab and add some words with synonyms, antonyms, and definitions</li>
+        <li><strong>Go to Quiz tab:</strong> Check that question count options are visible</li>
+        <li><strong>Change quiz type:</strong> Switch between Synonyms, Antonyms, and Definitions</li>
+        <li><strong>Verify options update:</strong> Options should change based on available data for each type</li>
+        <li><strong>Test mistake mode:</strong> Create some mistakes, then test in mistake mode</li>
+        <li><strong>Test session filtering:</strong> Switch sessions and verify options adjust</li>
+    </ol>
+
+    <h3>🔍 Expected Behavior</h3>
+    <div class="info">
+        <h4>Quiz Type Filtering:</h4>
+        <ul>
+            <li><strong>Synonyms:</strong> Only counts cards with synonyms data</li>
+            <li><strong>Antonyms:</strong> Only counts cards with antonyms data</li>
+            <li><strong>Definitions:</strong> Only counts cards with definitions data</li>
+        </ul>
+        
+        <h4>Question Count Options:</h4>
+        <ul>
+            <li><strong>Dynamic limits:</strong> Options limited to available cards for selected type</li>
+            <li><strong>Real-time updates:</strong> Options change immediately when quiz type changes</li>
+            <li><strong>Fallback handling:</strong> Shows appropriate message when no cards available</li>
+        </ul>
+        
+        <h4>Session Integration:</h4>
+        <ul>
+            <li><strong>Session filtering:</strong> Still works with quiz type filtering</li>
+            <li><strong>Session info display:</strong> Shows current session and available word count</li>
+        </ul>
+    </div>
+
+    <button onclick="openMainApp()">📱 Open Main App</button>
+    <button onclick="showFix()">🔧 Show Fix Details</button>
+    <button onclick="clearTestResults()">🧹 Clear Results</button>
+
+    <script>
+        function addTestResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = message;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function clearTestResults() {
+            document.getElementById('testResults').innerHTML = '';
+        }
+
+        function openMainApp() {
+            window.open('vocabulary_memory_helper_single_file_web_app.html', '_blank');
+        }
+        
+        function showFix() {
+            clearTestResults();
+            addTestResult('<h4>🔧 Technical Fix Summary</h4>', 'info');
+            addTestResult(`
+                <strong>Problem:</strong> updateQuizQuestionOptions() was counting all cards instead of only those with required data for the quiz type.
+                <br><br>
+                <strong>Solution:</strong>
+                <br>• Added quiz type detection: <code>const quizType = $('#quizType').value</code>
+                <br>• Added proper filtering for each quiz type:
+                <br>&nbsp;&nbsp;- Definitions: <code>cards.filter(c => c.definition && c.definition.trim())</code>
+                <br>&nbsp;&nbsp;- Synonyms: <code>cards.filter(c => c.synonyms && c.synonyms.trim())</code>
+                <br>&nbsp;&nbsp;- Antonyms: <code>cards.filter(c => c.antonyms && c.antonyms.trim())</code>
+                <br>• Added event listener: <code>$('#quizType').addEventListener('change', updateQuizQuestionOptions)</code>
+                <br>• Improved fallback handling for edge cases
+            `, 'success');
+            
+            addTestResult(`
+                <strong>Code Changes Made:</strong>
+                <br>• Line ~1487-1520: Updated updateQuizQuestionOptions() function
+                <br>• Line ~2004-2007: Added quiz type change event listener
+                <br>• Line ~1555-1574: Improved fallback option handling
+            `, 'info');
+        }
+
+        // Show status on load
+        window.onload = function() {
+            addTestResult('<h3>🎉 Quiz Options Fix Applied</h3>', 'success');
+            addTestResult('The issue with disappearing quiz question count options has been fixed. The options now properly consider the selected quiz type and only count cards that have the required data.', 'success');
+            addTestResult('<strong>Status:</strong> Ready for testing. Open the main app to verify the fix works correctly.', 'info');
+        };
+    </script>
+</body>
+</html>

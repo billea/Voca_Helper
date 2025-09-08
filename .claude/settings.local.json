@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/mnt/c/Users/**)",
+      "Bash(npx:*)",
+      "Bash(python3:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Read(/mnt/c/Users/**)",
+      "WebFetch(domain:cdnjs.cloudflare.com)",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "Bash(sed:*)",
+      "Bash(pkill:*)",
+      "Read(/mnt/c/Users/Lea Kim/OneDrive/Pictures/Work SS/**)",
+      "Read(/mnt/c/Users/Lea Kim/OneDrive/Pictures/Work SS/**)",
+      "Read(/mnt/c/Users/Lea Kim/OneDrive/Pictures/Work SS/**)",
+      "Read(/mnt/c/Users/Lea Kim/OneDrive/Pictures/Work SS/**)",
+      "Read(/mnt/c/Users/Lea Kim/OneDrive/Pictures/Work SS/**)",
+      "Read(/mnt/c/Users/Lea Kim/OneDrive/Pictures/Work SS/**)",
+      "Read(/mnt/c/Users/Lea Kim/OneDrive/Pictures/Work SS/**)",
+      "Bash(python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

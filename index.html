@@ -1,0 +1,3968 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vocabulary Memory Helper</title>
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#111827; --muted:#1f2937; --text:#e5e7eb; --sub:#9ca3af; --accent:#22d3ee; --accent2:#a78bfa; --good:#34d399; --warn:#f59e0b; --bad:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji; background:linear-gradient(135deg,#0f172a,#0b1222); color:var(--text)}
+    .app{max-width:1100px;margin:0 auto;padding:20px}
+    .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    h1{font-size:clamp(20px,3vw,28px);margin:0;font-weight:800;letter-spacing:0.3px}
+    .badge{font-size:12px;color:var(--bg);background:linear-gradient(135deg,var(--accent),var(--accent2));padding:6px 10px;border-radius:999px;font-weight:700}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+    .tab{border:1px solid #263147;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:12px;cursor:pointer;color:#e5e7eb;font-weight:500}
+    .tab.active{background:linear-gradient(135deg,rgba(34,211,238,.12),rgba(167,139,250,.12)); border-color:#3a4a6b;color:#ffffff;font-weight:600}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+    .card{background:linear-gradient(180deg,#0c1427,#0a1323); border:1px solid #1f2a44; border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    label{font-size:12px;color:var(--sub)}
+    input,textarea,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #27324d;background:#0a1322;color:var(--text);outline:none}
+    textarea{min-height:72px;resize:vertical}
+    .row{display:flex;gap:10px;align-items:center}
+    .row.wrap{flex-wrap:wrap}
+    .btn{padding:10px 14px;border:1px solid #27324d;background:#0a1322;color:#e5e7eb;border-radius:12px;cursor:pointer;font-weight:500}
+    .btn.primary{background:linear-gradient(135deg,rgba(34,211,238,.25),rgba(167,139,250,.25));color:#ffffff;border-color:#22d3ee}
+    .btn.good{background:rgba(52,211,153,.25);border-color:#10b981;color:#ffffff}
+    .btn.warn{background:rgba(245,158,11,.25);border-color:#f59e0b;color:#ffffff}
+    .btn.bad{background:rgba(239,68,68,.25);border-color:#ef4444;color:#ffffff}
+    .btn.ghost{background:transparent;border-color:#374151;color:#d1d5db}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+    .btn.primary:hover{background:linear-gradient(135deg,rgba(34,211,238,.35),rgba(167,139,250,.35))}
+    .btn.good:hover{background:rgba(52,211,153,.35)}
+    .btn.warn:hover{background:rgba(245,158,11,.35)}
+    .btn.bad:hover{background:rgba(239,68,68,.35)}
+    .btn.ghost:hover{background:rgba(55,65,81,0.2)}
+    .tab:hover{background:rgba(255,255,255,0.08);color:#ffffff}
+    .tab.active:hover{background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(167,139,250,.18))}
+    .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
+    .kpi .item{background:#0a1322;border:1px solid #1f2a44;border-radius:14px;padding:12px;text-align:center;transition:all 0.3s ease}
+    .kpi .item.active{background:linear-gradient(135deg,rgba(34,211,238,.15),rgba(167,139,250,.15));border-color:#22d3ee;box-shadow:0 4px 12px rgba(34,211,238,0.3)}
+    .kpi .item .v{font-size:18px;font-weight:800}
+    .pill{padding:6px 10px;border-radius:999px;background:#0a1322;border:1px solid #263147;color:var(--sub);font-size:12px}
+    .muted{color:var(--sub)}
+    .hr{height:1px;background:#1f2a44;margin:12px 0}
+    .word-chip{display:inline-block;padding:6px 10px;border-radius:999px;border:1px dashed #33406b;margin:4px;background:#0b1425}
+    .study-card{padding:32px;border-radius:20px;background:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%);border:3px solid #22d3ee;min-height:500px;position:relative;color:#1e293b;box-shadow:0 20px 40px rgba(0,0,0,0.1)}
+    .study-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;border-bottom:2px solid #22d3ee;padding-bottom:16px}
+    .study-title{font-size:24px;font-weight:800;color:#0891b2;margin:0}
+    .study-pos{background:#dc2626;color:white;padding:4px 12px;border-radius:20px;font-size:14px;font-weight:600}
+    .study-word{font-size:clamp(32px,5vw,48px);font-weight:900;color:#0f172a;text-align:center;margin:20px 0;letter-spacing:0.5px}
+    .study-pronunciation{font-size:18px;color:#6366f1;text-align:center;font-style:italic;margin-bottom:24px}
+    .study-section{margin:16px 0}
+    .study-label{font-size:16px;font-weight:700;color:#dc2626;margin-bottom:8px;display:block}
+    .study-content{font-size:16px;line-height:1.6;color:#334155}
+    .study-definition{font-size:18px;text-align:center;margin:20px 0;padding:16px;background:rgba(34,211,238,0.08);border-radius:12px;color:#0f172a}
+    .study-example{font-size:16px;color:#059669;font-style:italic;text-align:center;margin:20px 0;padding:12px;background:rgba(5,150,105,0.08);border-radius:8px}
+    .study-bottom{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
+    .study-column{padding:12px}
+    .study-list{list-style:none;padding:0;margin:8px 0}
+    .study-list li{background:rgba(99,102,241,0.1);margin:4px 0;padding:6px 10px;border-radius:6px;font-size:14px}
+    .study-morphology{text-align:center;font-style:italic;color:#7c3aed;margin:12px 0}
+    .tts{cursor:pointer;margin-left:8px;opacity:0.7;transition:opacity 0.2s ease}\n    .tts:hover{opacity:1;transform:scale(1.1)}
+    .footer{margin-top:28px;text-align:center;color:#64748b;font-size:12px}
+    .list{max-height:420px;overflow:auto}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{border-bottom:1px solid #1f2a44;padding:10px;text-align:left;font-size:14px}
+    .table th{position:sticky;top:0;background:#0a1322}
+    .small{font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="row wrap">
+        <h1>Vocabulary Memory Helper</h1>
+        <span class="badge">Offline • Single&nbsp;File</span>
+      </div>
+    </div>
+
+    <div class="kpi">
+      <div class="item" id="kTotalCard" style="cursor:pointer"><div class="v" id="kTotal">0</div><div class="muted small">Total cards</div></div>
+      <div class="item" id="kSavedCard" style="cursor:pointer"><div class="v" id="kSaved">0</div><div class="muted small">Saved Words</div></div>
+      <div class="item" id="kMistakeCard" style="cursor:pointer"><div class="v" id="kMistakes">0</div><div class="muted small">Mistakes</div></div>
+      <div class="item" id="kDueCard" style="cursor:pointer"><div class="v" id="kDue">0</div><div class="muted small">Quiz remaining</div></div>
+      <div class="item"><div class="v" id="kStreak">0</div><div class="muted small">Day streak</div></div>
+    </div>
+    
+    <div class="kpi" style="margin-top: 8px;">
+      <div class="item" id="kLeechCard" style="cursor:pointer"><div class="v" id="kLeeches">0</div><div class="muted small">🐛 Leeches</div></div>
+      <div class="item" id="kOverdueCard" style="cursor:pointer"><div class="v" id="kOverdue">0</div><div class="muted small">⚠️ Overdue</div></div>
+      <div class="item" id="kSlowCard" style="cursor:pointer"><div class="v" id="kSlow">0</div><div class="muted small">🐌 Slow</div></div>
+      <div class="item" id="kNewCard" style="cursor:pointer"><div class="v" id="kNew">0</div><div class="muted small">✨ New</div></div>
+      <div class="item" id="kMatureCard" style="cursor:pointer"><div class="v" id="kMature">0</div><div class="muted small">🎯 Mature</div></div>
+    </div>
+
+    <!-- Reset Controls (shown when in Saved/Mistakes mode) -->
+    <div id="resetControls" style="display:none; margin:12px 0; padding:12px; background:var(--muted); border-radius:8px;">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div>
+          <span id="resetControlsTitle" style="font-weight:600; color:var(--accent);">Reset Options</span>
+          <div class="muted small" id="resetControlsDesc">Clear selected category data</div>
+        </div>
+        <div class="row" style="gap:8px;">
+          <button class="btn warn" id="resetSavedBtn" style="display:none;">⚠️ Reset Saved Words</button>
+          <button class="btn warn" id="resetMistakesBtn" style="display:none;">⚠️ Reset All Mistakes</button>
+        </div>
+      </div>
+      
+      <!-- Mistake Session Controls -->
+      <div id="mistakeSessionControls" style="display:none; margin-top:12px; border-top:1px solid var(--accent); padding-top:12px;">
+        <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div>
+            <span style="font-weight:600;">Mistake Sessions</span>
+            <div class="muted small">Group mistakes by quiz session • Practice sessions multiple times</div>
+          </div>
+          <button class="btn ghost small" id="newSessionBtn">📝 New Session</button>
+        </div>
+        
+        <!-- Session List -->
+        <div id="sessionList" style="max-height:200px; overflow-y:auto;">
+          <!-- Session items will be populated here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Group Selection Modal -->
+    <div id="groupSelectionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+      <div style="background:var(--panel); border-radius:16px; padding:24px; max-width:600px; width:90%; max-height:80%; overflow-y:auto; border:2px solid var(--accent);">
+        <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="margin:0; color:var(--accent);">📚 Select Study Groups</h3>
+          <button id="closeGroupModal" style="background:none; border:none; color:var(--text); font-size:24px; cursor:pointer; padding:0; width:32px; height:32px;">×</button>
+        </div>
+        
+        <div class="muted small" style="margin-bottom:16px;">
+          Select which groups of cards (max 200 words each) to use for studying and quizzes.
+          <br><strong>Active Groups:</strong> <span id="activeGroupCount">0</span> groups selected
+        </div>
+        
+        <!-- Group Management Buttons -->
+        <div class="row" style="gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+          <button class="btn ghost small" id="selectAllGroupsModal">Select All Groups</button>
+          <button class="btn ghost small" id="deselectAllGroupsModal">Deselect All</button>
+          <button class="btn ghost small" id="reshuffleGroupsBtn">🔀 Reshuffle Groups</button>
+        </div>
+        
+        <!-- Group List -->
+        <div id="groupListContainer" style="max-height:300px; overflow-y:auto; border:1px solid var(--muted); border-radius:8px; padding:8px;">
+          <!-- Group checkboxes will be populated here -->
+        </div>
+        
+        <!-- Apply Button -->
+        <div class="row" style="justify-content:center; margin-top:16px;">
+          <button class="btn primary" id="applyGroupSelection">Apply Selection</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Group Status Display -->
+    <div id="groupStatus" style="margin:8px 0; padding:8px 12px; background:rgba(34,211,238,0.1); border-radius:8px; border:1px solid rgba(34,211,238,0.3); display:none;">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <span style="font-size:13px; color:var(--accent);">
+          📚 <span id="groupStatusText">All groups selected</span>
+        </span>
+        <button class="btn ghost small" id="changeGroupSelection" style="font-size:11px; padding:4px 8px;">Change</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="study">Study</button>
+      <button class="tab" data-tab="quiz">Quiz</button>
+      <button class="tab" data-tab="manage">Manage</button>
+      <button class="tab" data-tab="import">Import / Export</button>
+      <button class="tab" data-tab="settings">Settings</button>
+      <span class="pill" id="status"></span>
+    </div>
+
+    <section id="tab-study">
+      <div class="study-card" id="studyCard">
+        <div class="study-word" id="frontWord">No cards due</div>
+        <div class="study-def" id="frontHint">Add or import some words to begin.</div>
+      </div>
+      <div class="row" style="margin-top:20px; justify-content:center; gap:12px; flex-wrap:wrap">
+        <button class="btn" id="backBtn" style="padding:10px 16px">← Back</button>
+        <button class="btn primary" id="revealBtn" style="padding:12px 24px; font-size:16px">📋 Show details</button>
+        <button class="btn" id="saveBtn" style="padding:10px 16px">💾 Save</button>
+        <button class="btn primary" id="nextBtn" style="padding:10px 16px">Next →</button>
+      </div>
+      <div class="row" style="margin-top:10px;justify-content:center">
+        <span class="muted small">Spacebar: Show/Hide details • ←/→: Back/Next • S: Save</span>
+      </div>
+    </section>
+    
+
+    <section id="tab-quiz" style="display:none">
+      <div class="card" id="quizSetup">
+        <h3>🎯 Quiz Mode</h3>
+        <p class="muted">Test your knowledge with multiple-choice questions on synonyms and antonyms.</p>
+        
+        <div class="row" style="gap:12px; align-items:end; margin:16px 0">
+          <div>
+            <label>Quiz Types (Select one or more)</label>
+            <div id="quizTypeSelection" style="display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--border); border-radius: 4px; padding: 12px; background: var(--panel);">
+              <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
+                <input type="checkbox" id="quizTypeAll" value="all" style="margin-right: 8px; width: 16px; height: 16px;">
+                <strong>🎲 All Types (Mixed Questions)</strong>
+              </label>
+              <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
+                <input type="checkbox" class="quiz-type-option" value="definitions" style="margin-right: 8px; width: 16px; height: 16px;">
+                📖 Definitions
+              </label>
+              <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
+                <input type="checkbox" class="quiz-type-option" value="synonyms" style="margin-right: 8px; width: 16px; height: 16px;">
+                🔄 Synonyms
+              </label>
+              <label style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
+                <input type="checkbox" class="quiz-type-option" value="antonyms" style="margin-right: 8px; width: 16px; height: 16px;">
+                ↔️ Antonyms
+              </label>
+            </div>
+          </div>
+          <div>
+            <label>Word Selection</label>
+            <select id="wordSelectionMode">
+              <option value="all">All Words</option>
+              <option value="missed">Missed Words Only</option>
+            </select>
+          </div>
+          <button class="btn primary" id="startQuizBtn">Start Quiz</button>
+        </div>
+        
+        <!-- Group Selection for Quiz -->
+        <div id="quizGroupSelection" style="margin:12px 0; padding:12px; background:rgba(34,211,238,0.05); border-radius:8px; border:1px solid rgba(34,211,238,0.2);">
+          <label style="font-weight:600; margin-bottom:8px; display:block;">📚 Select Groups for Quiz:</label>
+          <div class="row" style="gap:8px; margin-bottom:12px;">
+            <button class="btn ghost small" id="selectAllGroupsQuiz">Select All</button>
+            <button class="btn ghost small" id="deselectAllGroupsQuiz">Deselect All</button>
+          </div>
+          <div id="quizGroupCheckboxes" style="display:flex; gap:8px; flex-wrap:wrap;">
+            <!-- Group checkboxes for quiz will be populated here -->
+          </div>
+        </div>
+        
+        <div class="small muted">
+          <strong>📚 Group-Based Quizzing:</strong> Select groups to determine question count (1 group = ~200 words, 2 groups = ~400 words, etc.).
+          <br><strong>Requirements:</strong> You need at least 1 card with data for the selected quiz type (definitions, synonyms, or antonyms).
+          <br><strong>Auto-switch:</strong> If the current type has no cards, it will automatically switch to the best available type.
+          <br><strong>Mistake Session Practice:</strong> When in Mistake mode, you can practice the same words with any quiz type for flexible learning.
+          <br><span id="quizTypeLockInfo" style="display:none; color:#f59e0b;"><strong>🔒 Quiz Type Locked:</strong> Fixed to match the selected mistake session.</span>
+        </div>
+        
+        <div id="sessionQuizInfo" class="small muted" style="margin-top:8px; display:none;">
+          <strong>📝 Mistake Session Mode Active:</strong> <span id="currentSessionInfo"></span>
+        </div>
+      </div>
+
+      <div class="card" id="quizGame" style="display:none">
+        <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:16px">
+          <h3 id="quizTitle">Synonym Quiz</h3>
+          <div class="row">
+            <span class="pill" id="quizTimer" style="background:var(--warn); font-weight:700; font-size:16px">⏱️ 10s</span>
+            <span class="pill" id="quizProgress">Question 1 of 10</span>
+            <span class="pill" id="quizScore">Score: 0/0</span>
+            <button class="btn bad" id="quitQuizBtn" style="margin-left:12px">✖ Quit Quiz</button>
+          </div>
+        </div>
+        
+        <div id="quizQuestion">
+          <div class="study-card" style="min-height:120px">
+            <div class="study-word" id="quizWord">Loading...</div>
+            <div class="study-def" id="quizPrompt">Select the synonym:</div>
+          </div>
+          
+          <div class="grid" style="grid-template-columns:1fr 1fr; gap:8px; margin-top:16px">
+            <button class="btn" id="option0">Option A</button>
+            <button class="btn" id="option1">Option B</button>
+            <button class="btn" id="option2">Option C</button>
+            <button class="btn" id="option3">Option D</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="quizResults" style="display:none">
+        <h3>🎊 Quiz Complete!</h3>
+        <div class="kpi" style="grid-template-columns:repeat(3,1fr)">
+          <div class="item">
+            <div class="v" id="finalScore">8</div>
+            <div class="muted small">Correct</div>
+          </div>
+          <div class="item">
+            <div class="v" id="finalTotal">10</div>
+            <div class="muted small">Total</div>
+          </div>
+          <div class="item">
+            <div class="v" id="finalPercent">80%</div>
+            <div class="muted small">Accuracy</div>
+          </div>
+        </div>
+        
+        <div style="text-align:center; margin:12px 0; padding:8px; background:rgba(34,211,238,0.1); border-radius:8px; font-size:13px; color:var(--sub);">
+          🔁 You can practice the same mistake session multiple times for better retention!
+        </div>
+        
+        <div class="row" style="justify-content:center; gap:8px; margin-top:16px">
+          <button class="btn" id="reviewAnswers">Review Answers</button>
+          <button class="btn primary" id="newQuizBtn">Practice Again</button>
+        </div>
+        
+        <div id="answerReview" style="display:none; margin-top:16px">
+          <h4>Answer Review</h4>
+          <div id="reviewList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-manage" style="display:none">
+      <div class="grid">
+        <div class="card">
+          <div class="row">
+            <div style="flex:1">
+              <label>Word</label>
+              <input id="inWord" placeholder="e.g., benevolent" />
+            </div>
+            <div style="width:160px">
+              <label>Word type</label>
+              <select id="inPOS"><option value="">—</option><option>noun</option><option>verb</option><option>adjective</option><option>adverb</option><option>preposition</option><option>conjunction</option><option>pronoun</option><option>interjection</option><option>phrase</option></select>
+            </div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <div style="flex:1">
+              <label>Child‑friendly definition</label>
+              <textarea id="inDef" placeholder="A simple meaning the child can recall."></textarea>
+            </div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <div style="flex:1">
+              <label>Example sentence</label>
+              <textarea id="inEx" placeholder="Use the word in an everyday sentence."></textarea>
+            </div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <div style="flex:1">
+              <label>Root / prefix / suffix</label>
+              <input id="inMorph" placeholder="bene (good), -ful (full of), etc." />
+            </div>
+            <div style="flex:1">
+              <label>Synonyms (comma‑separated)</label>
+              <input id="inSyn" placeholder="kind, generous" />
+            </div>
+            <div style="flex:1">
+              <label>Antonyms (comma‑separated)</label>
+              <input id="inAnt" placeholder="unkind, mean" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;justify-content:flex-end">
+            <button class="btn" id="clearForm">Clear</button>
+            <button class="btn primary" id="addCardBtn">Save</button>
+          </div>
+        </div>
+        <div class="card list">
+          <div class="row" style="margin-bottom:12px; justify-content:space-between; align-items:center">
+            <div>
+              <input type="checkbox" id="selectAll" style="margin-right:8px">
+              <label for="selectAll" style="cursor:pointer">Select All</label>
+            </div>
+            <div style="display:flex; gap:8px">
+              <button class="btn warn" id="findDuplicatesBtn">🔍 Find Duplicates</button>
+              <button class="btn bad" id="bulkDeleteBtn" style="display:none">🗑️ Delete Selected</button>
+              <span id="selectionCount" class="muted small"></span>
+            </div>
+          </div>
+          <table class="table" id="cardsTable">
+            <thead><tr><th>☑️</th><th>Word</th><th>Word Type</th><th>Definition</th><th>Due</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Duplicate Resolution Modal -->
+    <div id="duplicateModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center">
+      <div style="background:var(--panel); border-radius:16px; padding:24px; max-width:800px; width:90%; max-height:80%; overflow-y:auto; border:2px solid var(--accent); position:relative">
+        <h3>🔍 Duplicate Words Found</h3>
+        <p class="muted">Compare duplicate words side-by-side and check which ones to DELETE. Keep the best version of each word.</p>
+        
+        <!-- Sticky Action Bar at Top -->
+        <div style="position:sticky; top:0; left:0; right:0; background:var(--panel); border-bottom:2px solid var(--accent); padding:16px 0; margin:16px -24px 20px -24px; z-index:1001; border-radius:16px 16px 0 0;">
+          <div class="row" style="justify-content:space-between; gap:12px; padding:0 24px;">
+            <div class="row" style="gap:8px;">
+              <button class="btn primary" id="autoResolveDuplicatesBtn">🧠 Auto-Resolve</button>
+              <span class="muted small" style="align-self:center;">Smart duplicate removal</span>
+            </div>
+            <div class="row" style="gap:12px;">
+              <button class="btn" id="cancelDuplicates">Cancel</button>
+              <button class="btn bad" id="deleteDuplicatesBtn" style="opacity:0.6">Delete Selected</button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="duplicateGroups"></div>
+      </div>
+    </div>
+
+    <section id="tab-import" style="display:none">
+      <div class="card">
+        <h3>Import</h3>
+        <p class="muted">Upload: <b>JSON</b> (app export) • <b>CSV</b> (flexible headers) • <b>Excel</b> (.xlsx/.xls) • <b>TSV</b> (tab-separated) • <b>PDF</b> (text extraction) • <b>Images</b> (OCR: .jpg/.png/.gif)</p>
+        <p class="muted small">Headers auto-detected: Word/Words/words, Definition/meaning/def, Example/Examples/sentence, Synonyms/Synonym/synonym, Antonyms/Antonym/antonym, POS/Word type/type</p>
+        <p class="muted small">PDF/Images: Extracts vocabulary automatically from text patterns</p>
+        <label class="btn ghost" for="importFile">Import File</label>
+        <input id="importFile" type="file" accept=".json,.csv,.tsv,.txt,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.gif,.bmp" style="display:none" />
+        
+        <div class="hr"></div>
+        <h3>Export</h3>
+        <p class="muted">Download cards for backup or sharing.</p>
+        
+        <!-- Export Group Selection -->
+        <div style="margin:12px 0; padding:12px; background:rgba(34,211,238,0.05); border-radius:8px; border:1px solid rgba(34,211,238,0.2);">
+          <label style="font-weight:600; margin-bottom:8px; display:block;">📚 Select Groups to Export:</label>
+          <div class="row" style="gap:8px; margin-bottom:12px;">
+            <button class="btn ghost small" id="selectAllGroupsExport">Select All</button>
+            <button class="btn ghost small" id="deselectAllGroupsExport">Deselect All</button>
+          </div>
+          <div id="exportGroupCheckboxes" style="display:flex; gap:8px; flex-wrap:wrap;">
+            <!-- Group checkboxes for export will be populated here -->
+          </div>
+        </div>
+        
+        <div class="row" style="gap:8px">
+          <button class="btn" id="exportBtn2">Export JSON</button>
+          <button class="btn" id="exportCSV">Export CSV</button>
+        </div>
+        
+        <div class="hr"></div>
+        <h3>Auto-fill Missing Data</h3>
+        <p class="muted small">Fill missing definitions and word types using <code>dictionaryapi.dev</code> (no API key needed). Requires internet connection.</p>
+        <div class="row" style="gap:8px">
+          <button class="btn primary" id="fillDefsBtn">Fill missing definitions</button>
+          <button class="btn primary" id="fillPOSBtn">Fill missing word types</button>
+        </div>
+        <div class="row" style="gap:8px; margin-top:8px">
+          <button class="btn" id="stopFill" style="display:none">Stop Definitions</button>
+          <button class="btn" id="stopPOSFill" style="display:none">Stop Word Types</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-settings" style="display:none">
+      <div class="grid">
+        <div class="card">
+          <h3>Study settings</h3>
+          <div class="row" style="margin-top:8px">
+            <div style="flex:1">
+              <label>New cards per day</label>
+              <input id="setNewPerDay" type="number" value="20" min="0" />
+            </div>
+            <div style="flex:1">
+              <label>Maximum reviews per day</label>
+              <input id="setMaxReviews" type="number" value="200" min="0" />
+            </div>
+          </div>
+          <div class="row" style="margin-top:8px;align-items:center">
+            <input id="setTTS" type="checkbox" checked />
+            <label for="setTTS">Enable voice (TTS) - click speaker to hear</label>
+          </div>
+          <div class="row" style="margin-top:8px;align-items:center">
+            <input id="setKidMode" type="checkbox" />
+            <label for="setKidMode">Kid‑friendly big text</label>
+          </div>
+          <div class="row" style="margin-top:10px;justify-content:flex-end">
+            <button class="btn" id="resetData">Reset all data</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>About</h3>
+          <p class="muted">This is a single‑file app. Share the <em>.html</em> file and it works offline in any modern browser. All data stays on your device using localStorage.</p>
+          <p class="muted small">Spaced repetition uses a simplified SM‑2 algorithm. Ratings: Again(0), Hard(3), Good(4), Easy(5).</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Made with 💙 for learners. Tip: press <b>?</b> for help.</div>
+  </div>
+
+  <template id="studyBackTpl">
+    <div>
+      <div class="study-word" style="font-size:clamp(18px,3vw,28px)" id="backDef"></div>
+      <div class="study-def" id="backEx"></div>
+      <div style="margin-top:10px">
+        <span class="word-chip" id="backMorph"></span>
+        <span class="word-chip" id="backSyn"></span>
+        <span class="word-chip" id="backAnt"></span>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    const storeKey = 'vocab_cards_v1';
+    const prefKey = 'vocab_prefs_v1';
+    const groupKey = 'vocab_groups_v1';
+    let cards = loadCards();
+    let prefs = loadPrefs();
+    let wordGroups = loadWordGroups();
+    let activeGroups = new Set(); // Currently selected group IDs
+    let queue = []; // study queue of IDs
+    let currentId = null; // current card id
+    let showingBack = false;
+
+    function loadCards(){
+      try{ return JSON.parse(localStorage.getItem(storeKey) || '[]'); }catch{ return []; }
+    }
+    function saveCards(){ localStorage.setItem(storeKey, JSON.stringify(cards)); refreshUI(); }
+    function loadPrefs(){
+      try{ return Object.assign({ newPerDay:20, maxReviews:200, tts:true, kid:false, streak:0, lastStudy:"" }, JSON.parse(localStorage.getItem(prefKey)||'{}')); }catch{ return { newPerDay:20, maxReviews:200, tts:true, kid:false, streak:0, lastStudy:"" }; }
+    }
+    function savePrefs(){ localStorage.setItem(prefKey, JSON.stringify(prefs)); }
+    
+    // Group management functions
+    function loadWordGroups(){
+      try{ 
+        const groups = JSON.parse(localStorage.getItem(groupKey) || '[]'); 
+        // Initialize active groups if empty
+        if (groups.length === 0 && cards.length > 0) {
+          return createInitialGroups();
+        }
+        return groups;
+      }catch{ return []; }
+    }
+    
+    function saveWordGroups(){ 
+      localStorage.setItem(groupKey, JSON.stringify(wordGroups)); 
+      renderGroupSelection();
+    }
+    
+    function createInitialGroups() {
+      console.log('🎆 Creating initial groups from', cards.length, 'cards');
+      const shuffledCards = [...cards].sort(() => Math.random() - 0.5);
+      const groups = [];
+      
+      for (let i = 0; i < shuffledCards.length; i += 200) {
+        const groupCards = shuffledCards.slice(i, i + 200);
+        const groupId = `group_${Math.random().toString(36).substr(2, 9)}`;
+        const group = {
+          id: groupId,
+          name: `Group ${groups.length + 1}`,
+          cardIds: groupCards.map(c => c.id),
+          created: Date.now()
+        };
+        groups.push(group);
+        console.log(`🎆 Created group ${group.name} with ${group.cardIds.length} cards`);
+      }
+      
+      console.log('🎆 Total groups created:', groups.length);
+      return groups;
+    }
+    
+    function reshuffleGroups() {
+      if (confirm('Reshuffle all cards into new random groups? This cannot be undone.')) {
+        wordGroups = createInitialGroups();
+        saveWordGroups();
+        // Reset active groups to select all
+        activeGroups = new Set(wordGroups.map(g => g.id));
+        toast(`Reshuffled into ${wordGroups.length} groups`);
+        renderGroupListInModal();
+        updateActiveGroupCount();
+      }
+    }
+    
+    function fixOversizedGroups() {
+      console.log('🔧 Checking for oversized groups...');
+      let hasOversizedGroups = false;
+      const cardsToReassign = [];
+      
+      // Find cards in oversized groups
+      wordGroups.forEach(group => {
+        if (group.cardIds.length > 200) {
+          console.log(`🚨 Found oversized group: ${group.name} has ${group.cardIds.length} cards`);
+          hasOversizedGroups = true;
+          // Remove excess cards (keep first 200)
+          const excessCards = group.cardIds.splice(200);
+          cardsToReassign.push(...excessCards);
+          console.log(`🔧 Trimmed ${group.name} to 200 cards, ${excessCards.length} cards need reassignment`);
+        }
+      });
+      
+      // Reassign excess cards to available groups or create new ones
+      cardsToReassign.forEach(cardId => {
+        addCardToGroup(cardId);
+      });
+      
+      if (hasOversizedGroups) {
+        saveWordGroups();
+        console.log(`✅ Fixed oversized groups, reassigned ${cardsToReassign.length} cards`);
+        toast(`Fixed oversized groups - reassigned ${cardsToReassign.length} cards`);
+      } else {
+        console.log('✅ All groups are within the 200 card limit');
+      }
+    }
+    
+    function addCardToGroup(cardId) {
+      // Find the group with the fewest cards that has space (< 200 cards)
+      let targetGroup = wordGroups
+        .filter(g => g.cardIds.length < 200)
+        .sort((a, b) => a.cardIds.length - b.cardIds.length)[0];
+      
+      // If all groups are full or no groups exist, create new group
+      if (!targetGroup) {
+        const newGroupId = `group_${Math.random().toString(36).substr(2, 9)}`;
+        targetGroup = {
+          id: newGroupId,
+          name: `Group ${wordGroups.length + 1}`,
+          cardIds: [],
+          created: Date.now()
+        };
+        wordGroups.push(targetGroup);
+        console.log(`🎆 Created new group: ${targetGroup.name} (all existing groups were full)`);
+      }
+      
+      // Add card to the group if not already present and group isn't full
+      if (!targetGroup.cardIds.includes(cardId) && targetGroup.cardIds.length < 200) {
+        targetGroup.cardIds.push(cardId);
+        console.log(`📁 Added card ${cardId} to ${targetGroup.name} (now ${targetGroup.cardIds.length}/200 cards)`);
+        saveWordGroups();
+        
+        // If this group just reached 200, log it
+        if (targetGroup.cardIds.length === 200) {
+          console.log(`✅ Group ${targetGroup.name} is now FULL (200/200 cards)`);
+        }
+      } else if (targetGroup.cardIds.length >= 200) {
+        console.warn(`⚠️ Attempted to add card to full group ${targetGroup.name}. This should not happen!`);
+      }
+      
+      return targetGroup.id;
+    }
+    
+    function removeCardFromGroups(cardId) {
+      wordGroups.forEach(group => {
+        group.cardIds = group.cardIds.filter(id => id !== cardId);
+      });
+      // Remove empty groups
+      wordGroups = wordGroups.filter(group => group.cardIds.length > 0);
+      saveWordGroups();
+    }
+    
+    // Quiz completion tracking functions
+    function getCurrentQuizCycle() {
+      // Get the current global quiz cycle from localStorage or default to 1
+      const currentCycle = localStorage.getItem('quiz_cycle_global') || '1';
+      return parseInt(currentCycle);
+    }
+    
+    function setCurrentQuizCycle(cycle) {
+      localStorage.setItem('quiz_cycle_global', cycle.toString());
+    }
+    
+    function markCardAsQuizCompleted(cardId) {
+      const card = cards.find(c => c.id === cardId);
+      if (card) {
+        const currentCycle = getCurrentQuizCycle();
+        card.quiz_completed = true;
+        card.quiz_cycle = currentCycle;
+        console.log(`🏁 Marked card "${card.word}" as quiz completed for cycle ${currentCycle}`);
+        
+        // Check if all cards are completed for the current cycle
+        checkAndAdvanceCycle();
+        saveCards();
+      }
+    }
+    
+    function checkAndAdvanceCycle() {
+      const currentCycle = getCurrentQuizCycle();
+      const completedInCurrentCycle = cards.filter(c => (c.quiz_cycle || 1) === currentCycle && (c.quiz_completed || false)).length;
+      
+      console.log(`📈 Quiz completion check: ${completedInCurrentCycle}/${cards.length} cards completed in cycle ${currentCycle}`);
+      
+      if (completedInCurrentCycle === cards.length) {
+        // All cards completed! Advance to next cycle
+        const nextCycle = currentCycle + 1;
+        setCurrentQuizCycle(nextCycle);
+        
+        // Reset all cards for the new cycle
+        cards.forEach(card => {
+          card.quiz_completed = false;
+          card.quiz_cycle = nextCycle;
+        });
+        
+        console.log(`🎆 CYCLE COMPLETE! Advanced to cycle ${nextCycle}. All cards reset for new round.`);
+        toast(`🎆 Congratulations! Completed all ${cards.length} cards. Starting cycle ${nextCycle}!`);
+        saveCards();
+      }
+    }
+    
+    function initializeQuizCompletionTracking() {
+      // Initialize quiz completion fields for existing cards that don't have them
+      let needsSave = false;
+      cards.forEach(card => {
+        if (card.quiz_completed === undefined) {
+          card.quiz_completed = false;
+          needsSave = true;
+        }
+        if (card.quiz_cycle === undefined) {
+          card.quiz_cycle = getCurrentQuizCycle();
+          needsSave = true;
+        }
+      });
+      
+      if (needsSave) {
+        console.log('🔄 Initialized quiz completion tracking for existing cards');
+        saveCards();
+      }
+    }
+    
+    function getCardsFromActiveGroups() {
+      console.log('🔍 DEBUG: getCardsFromActiveGroups called');
+      console.log('🔍 Active groups:', Array.from(activeGroups));
+      console.log('🔍 Total word groups:', wordGroups.length);
+      console.log('🔍 Total cards:', cards.length);
+      
+      if (activeGroups.size === 0) {
+        console.log('🔍 No active groups, returning all cards');
+        return cards; // Return all cards if no groups selected
+      }
+      
+      const activeCardIds = new Set();
+      wordGroups.forEach(group => {
+        if (activeGroups.has(group.id)) {
+          console.log(`🔍 Group ${group.name} (${group.id}) has ${group.cardIds.length} cards`);
+          group.cardIds.forEach(cardId => activeCardIds.add(cardId));
+        }
+      });
+      
+      const filteredCards = cards.filter(card => activeCardIds.has(card.id));
+      console.log('🔍 Filtered cards count:', filteredCards.length);
+      console.log('🔍 Active card IDs sample:', Array.from(activeCardIds).slice(0, 5));
+      
+      // Debug: Show which groups contributed cards
+      console.log('🔍 Active groups breakdown:');
+      wordGroups.forEach(group => {
+        if (activeGroups.has(group.id)) {
+          console.log(`   ✅ ${group.name}: ${group.cardIds.length} cards`);
+        }
+      });
+      
+      return filteredCards;
+    }
+    function loadSessionData(){
+      try{ 
+        console.log('--- Loading session data from localStorage ---');
+        console.log('localStorage available:', typeof Storage !== "undefined");
+        console.log('All localStorage keys:', Object.keys(localStorage));
+        
+        const rawData = localStorage.getItem('vocab_mistake_sessions') || '{}';
+        console.log('Raw localStorage data:', rawData);
+        console.log('Raw data type:', typeof rawData);
+        console.log('Raw data length:', rawData.length);
+        
+        const data = JSON.parse(rawData);
+        console.log('Parsed session data:', data);
+        console.log('Parsed data type:', typeof data);
+        console.log('Session data keys:', Object.keys(data));
+        
+        // Update session counter to be higher than any existing session
+        const existingSessions = Object.keys(data).map(id => parseInt(id)).filter(id => !isNaN(id));
+        console.log('Existing session IDs:', existingSessions);
+        
+        if (existingSessions.length > 0) {
+          const maxSession = Math.max(...existingSessions);
+          mistakeSessionCounter = maxSession + 1;
+          console.log('Max existing session:', maxSession, 'New counter:', mistakeSessionCounter);
+        } else {
+          mistakeSessionCounter = 1;
+          console.log('No existing sessions, starting at 1');
+        }
+        
+        console.log('--- Session loading complete ---');
+        return data;
+      } catch(e) { 
+        console.error('Error loading session data:', e);
+        mistakeSessionCounter = 1;
+        return {}; 
+      }
+    }
+    function saveSessionData(){ 
+      console.log('About to save session data:', mistakeSessionData);
+      try {
+        localStorage.setItem('vocab_mistake_sessions', JSON.stringify(mistakeSessionData)); 
+        console.log('Session data saved successfully to localStorage');
+        // Verify it was saved
+        const saved = localStorage.getItem('vocab_mistake_sessions');
+        console.log('Verification - data in localStorage:', saved);
+      } catch (e) {
+        console.error('Error saving to localStorage:', e);
+      }
+    }
+
+    function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+    function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+    function refreshUI(){
+      const now = Date.now();
+      $('#kTotal').textContent = cards.length;
+      
+      // Calculate quiz completion progress
+      const currentCycle = getCurrentQuizCycle();
+      const completedInCurrentCycle = cards.filter(c => (c.quiz_cycle || 1) === currentCycle && (c.quiz_completed || false)).length;
+      const remainingToComplete = cards.length - completedInCurrentCycle;
+      $('#kDue').textContent = remainingToComplete;
+      
+      $('#kSaved').textContent = cards.filter(c=> c.saved).length;
+      $('#kMistakes').textContent = cards.filter(c=> c.mistake).length;
+      
+      // Update group display
+      renderGroupSelection();
+      updateGroupStatus();
+      
+      // Memory-boosting groups
+      $('#kLeeches').textContent = cards.filter(c=> c.is_leech || (c.wrong_count >= 8 && c.interval < 4)).length;
+      $('#kOverdue').textContent = cards.filter(c=> (c.due||0) < now - (24 * 60 * 60 * 1000)).length; // >24h overdue
+      $('#kSlow').textContent = cards.filter(c=> c.slow_correct).length;
+      $('#kNew').textContent = cards.filter(c=> !c.seen || c.reps === 0).length;
+      $('#kMature').textContent = cards.filter(c=> c.interval >= 21 && c.reps >= 3).length; // 3+ weeks interval
+      // streak handling
+      const t = todayISO();
+      if(prefs.lastStudy && prefs.lastStudy !== t){
+        const last = new Date(prefs.lastStudy);
+        const y = new Date(t);
+        const diff = Math.round((y - last)/(1000*60*60*24));
+        if(diff === 1){ prefs.streak = (prefs.streak||0) + 1; }
+        else if(diff > 1){ prefs.streak = 0; }
+      }
+      $('#kStreak').textContent = prefs.streak||0; savePrefs();
+
+      // table
+      const tbody = $('#cardsTable tbody');
+      tbody.innerHTML = '';
+      cards.slice().sort((a,b)=> (a.word||'').localeCompare(b.word||'')).forEach(c=>{
+        const tr = document.createElement('tr');
+        const dueStr = c.due ? new Date(c.due).toLocaleDateString() : '—';
+        tr.innerHTML = `<td><input type='checkbox' class='card-checkbox' data-id='${c.id}' style='cursor:pointer'></td>
+          <td><b>${esc(c.word)}</b></td>
+          <td class='small'>${esc(c.pos||'—')}</td>
+          <td class='small'>${esc(c.definition||'')}</td>
+          <td class='small'>${dueStr}</td>
+          <td class='small'><button class='btn ghost' data-edit='${c.id}'>Edit</button> <button class='btn ghost' data-del='${c.id}'>Delete</button></td>`;
+        tbody.appendChild(tr);
+      });
+      $('#status').textContent = `${cards.length} cards saved`;
+      // Reset bulk selection UI when table rebuilds
+      if(typeof updateSelectionUI === 'function') updateSelectionUI();
+    }
+
+    function esc(s){ return (s||'').replace(/[&<>\"]/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m])); }
+
+    function addCard(obj){
+      const c = Object.assign({ id:uid(), word:'', definition:'', example:'', morphology:'', synonyms:'', antonyms:'', pos:'',
+        ef:2.5, interval:0, reps:0, due:Date.now(), created:Date.now(), seen:false, 
+        wrong_count:0, rt_ms:0, streak:0, slow_correct:false, is_leech:false, 
+        mistake_sessions:[], quiz_completed:false, quiz_cycle:1 }, obj);
+      cards.push(c); 
+      // Add to appropriate group
+      addCardToGroup(c.id);
+      saveCards();
+    }
+
+    function updateCard(id, patch){
+      const i = cards.findIndex(c=>c.id===id); if(i>-1){ cards[i] = Object.assign(cards[i], patch); saveCards(); }
+    }
+
+    function deleteCard(id){ 
+      cards = cards.filter(c=>c.id!==id); 
+      removeCardFromGroups(id);
+      saveCards(); 
+    }
+
+    // Tabs
+    let viewMode = 'all'; // 'all' or 'saved'
+    let currentMistakeSession = 'all';
+    let mistakeSessionCounter = 1;
+    let mistakeSessionData = {}; // Store session metadata
+    let currentSessionStarted = false; // Track if current session has been used
+    
+    $('#kTotalCard').addEventListener('click', ()=>{
+      viewMode = 'all';
+      updateKPIHighlight('total');
+      buildQueue();
+      hideResetControls();
+      updateQuizTypeForSession(); // Unlock quiz type when leaving mistakes mode
+      // Show study tab directly
+      ['quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = 'none');
+      $('#tab-study').style.display = 'block';
+      $$('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-tab="study"]').classList.add('active');
+      toast('Studying all cards');
+    });
+    
+    $('#kDueCard').addEventListener('click', ()=>{
+      viewMode = 'quiz_remaining';
+      updateKPIHighlight('due');
+      buildQueue();
+      hideResetControls();
+      const currentCycle = getCurrentQuizCycle();
+      const remainingCount = cards.filter(c => (c.quiz_cycle || 1) === currentCycle && !(c.quiz_completed || false)).length;
+      toast(`Viewing ${remainingCount} cards not yet quizzed in cycle ${currentCycle}`);
+    });
+    
+    $('#kSavedCard').addEventListener('click', ()=>{
+      viewMode = 'saved';
+      updateKPIHighlight('saved');
+      buildQueue();
+      showResetControls('saved');
+      updateQuizTypeForSession(); // Unlock quiz type when leaving mistakes mode
+      // Show study tab directly
+      ['quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = 'none');
+      $('#tab-study').style.display = 'block';
+      $$('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-tab="study"]').classList.add('active');
+      toast('Studying saved words');
+    });
+    
+    $('#kMistakeCard').addEventListener('click', ()=>{
+      viewMode = 'mistakes';
+      updateKPIHighlight('mistakes');
+      buildQueue();
+      showResetControls('mistakes');
+      
+      // If we don't have any sessions and currentMistakeSession is 'all', create first session
+      console.log(`Entering mistakes mode. Current session: ${currentMistakeSession}, Session data count: ${Object.keys(mistakeSessionData).length}`);
+      if (currentMistakeSession === 'all' && Object.keys(mistakeSessionData).length === 0) {
+        currentMistakeSession = mistakeSessionCounter.toString();
+        mistakeSessionCounter++;
+        currentSessionStarted = false;
+        console.log(`Created first session: ${currentMistakeSession}`);
+      } else if (currentMistakeSession === 'all' && Object.keys(mistakeSessionData).length > 0) {
+        // If we have sessions but are in 'all' mode, switch to the latest session
+        const latestSession = Math.max(...Object.keys(mistakeSessionData).map(id => parseInt(id))).toString();
+        currentMistakeSession = latestSession;
+        console.log(`Switched to latest session: ${currentMistakeSession}`);
+      }
+      
+      updateMistakeSessionSelect();
+      
+      // Update quiz type for session when entering mistakes mode
+      updateQuizTypeForSession();
+      
+      // Show study tab directly
+      ['quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = 'none');
+      $('#tab-study').style.display = 'block';
+      $$('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-tab="study"]').classList.add('active');
+      
+      const sessionCount = Object.keys(mistakeSessionData).length;
+      toast(`Studying mistake words (${sessionCount} sessions saved)`);
+    });
+    
+    // Memory-boosting group handlers
+    $('#kLeechCard').addEventListener('click', ()=>{
+      viewMode = 'leeches';
+      updateKPIHighlight('leeches');
+      buildQueue();
+      hideResetControls();
+      ['quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = 'none');
+      $('#tab-study').style.display = 'block';
+      $$('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-tab="study"]').classList.add('active');
+      toast('🐛 Studying leech words (repeat offenders)');
+    });
+    
+    $('#kOverdueCard').addEventListener('click', ()=>{
+      viewMode = 'overdue';
+      updateKPIHighlight('overdue');
+      buildQueue();
+      hideResetControls();
+      ['quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = 'none');
+      $('#tab-study').style.display = 'block';
+      $$('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-tab="study"]').classList.add('active');
+      toast('⚠️ Studying overdue words');
+    });
+    
+    $('#kSlowCard').addEventListener('click', ()=>{
+      viewMode = 'slow';
+      updateKPIHighlight('slow');
+      buildQueue();
+      hideResetControls();
+      ['quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = 'none');
+      $('#tab-study').style.display = 'block';
+      $$('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-tab="study"]').classList.add('active');
+      toast('🐌 Studying slow recall words');
+    });
+    
+    $('#kNewCard').addEventListener('click', ()=>{
+      viewMode = 'new';
+      updateKPIHighlight('new');
+      buildQueue();
+      hideResetControls();
+      ['quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = 'none');
+      $('#tab-study').style.display = 'block';
+      $$('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-tab="study"]').classList.add('active');
+      toast('✨ Studying new words');
+    });
+    
+    $('#kMatureCard').addEventListener('click', ()=>{
+      viewMode = 'mature';
+      updateKPIHighlight('mature');
+      buildQueue();
+      hideResetControls();
+      ['quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = 'none');
+      $('#tab-study').style.display = 'block';
+      $$('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-tab="study"]').classList.add('active');
+      toast('🎯 Studying mature words');
+    });
+    
+    // Reset Controls Functions
+    function showResetControls(mode) {
+      const resetControls = $('#resetControls');
+      const resetSavedBtn = $('#resetSavedBtn');
+      const resetMistakesBtn = $('#resetMistakesBtn');
+      const mistakeSessionControls = $('#mistakeSessionControls');
+      
+      resetControls.style.display = 'block';
+      
+      if (mode === 'saved') {
+        $('#resetControlsTitle').textContent = 'Reset Saved Words';
+        $('#resetControlsDesc').textContent = 'Clear all saved word flags';
+        resetSavedBtn.style.display = 'inline-block';
+        resetMistakesBtn.style.display = 'none';
+        mistakeSessionControls.style.display = 'none';
+      } else if (mode === 'mistakes') {
+        $('#resetControlsTitle').textContent = 'Reset Mistakes';
+        $('#resetControlsDesc').textContent = 'Clear mistake flags and sessions';
+        resetSavedBtn.style.display = 'none';
+        resetMistakesBtn.style.display = 'inline-block';
+        mistakeSessionControls.style.display = 'block';
+      }
+    }
+    
+    function hideResetControls() {
+      $('#resetControls').style.display = 'none';
+    }
+    
+    // Reset button event listeners
+    $('#resetSavedBtn').addEventListener('click', ()=>{
+      if (confirm('Reset all saved word flags? This will unsave all words but keep the vocabulary data.')) {
+        cards.forEach(card => card.saved = false);
+        saveCards();
+        toast('All saved word flags cleared');
+      }
+    });
+    
+    $('#resetMistakesBtn').addEventListener('click', (event)=>{
+      console.log('*** RESET MISTAKES BUTTON CLICKED ***');
+      console.log('Event details:', event);
+      console.log('Event target:', event.target);
+      console.log('Current time:', new Date().toISOString());
+      console.trace('Reset button click trace');
+      
+      if (confirm('⚠️ RESET ALL MISTAKES?\n\nThis will PERMANENTLY delete:\n• All mistake flags on words\n• All session history and data\n• All mistake tracking progress\n\nYour vocabulary words will remain unchanged.\n\nAre you absolutely sure?')) {
+        cards.forEach(card => {
+          card.mistake = false;
+          card.mistake_sessions = [];
+          card.wrong_count = 0;
+          card.is_leech = false;
+          card.slow_correct = false;
+        });
+        saveCards();
+        
+        // Reset session data
+        mistakeSessionCounter = 1;
+        mistakeSessionData = {};
+        saveSessionData();
+        
+        // If we're in mistakes mode, create and switch to the first session immediately
+        if (viewMode === 'mistakes') {
+          currentMistakeSession = mistakeSessionCounter.toString();
+          mistakeSessionCounter++;
+          console.log(`After reset: Created first session and switched to: ${currentMistakeSession}`);
+        } else {
+          currentMistakeSession = 'all';
+        }
+        
+        updateMistakeSessionSelect();
+        buildQueue(); // Refresh the queue with the new session
+        toast('All mistake flags and sessions cleared');
+        console.log('RESET MISTAKES: Clearing all session data');
+      } else {
+        console.log('Reset cancelled by user');
+      }
+    });
+    
+    // Mistake session functions
+    function updateMistakeSessionSelect() {
+      const sessionList = $('#sessionList');
+      const sessions = getMistakeSessions();
+      
+      sessionList.innerHTML = '';
+      
+      // Add "All Sessions" option
+      const allSessionItem = document.createElement('div');
+      allSessionItem.className = `session-item ${currentMistakeSession === 'all' ? 'active' : ''}`;
+      allSessionItem.style.cssText = `
+        padding:8px 12px; border:1px solid var(--muted); border-radius:6px; margin-bottom:8px; 
+        cursor:pointer; background:${currentMistakeSession === 'all' ? 'var(--accent)' : 'var(--panel)'};
+        color:${currentMistakeSession === 'all' ? 'white' : 'var(--text)'};
+      `;
+      allSessionItem.innerHTML = `
+        <div style="font-weight:600;">📊 All Sessions</div>
+        <div style="font-size:12px; opacity:0.8;">View all mistake words together</div>
+      `;
+      allSessionItem.addEventListener('click', (event) => {
+        console.log('*** ALL SESSIONS CLICKED ***');
+        console.log('Event details:', event);
+        console.trace('All sessions click trace');
+        selectMistakeSession('all');
+      });
+      sessionList.appendChild(allSessionItem);
+      
+      // Add individual sessions with detailed info
+      sessions.forEach(session => {
+        const sessionData = mistakeSessionData[session] || {};
+        const wordCount = cards.filter(c => c.mistake_sessions && c.mistake_sessions.includes(session)).length;
+        
+        console.log(`Session ${session}:`, sessionData, `Word count: ${wordCount}`);
+        
+        const sessionItem = document.createElement('div');
+        sessionItem.className = `session-item ${currentMistakeSession === session ? 'active' : ''}`;
+        sessionItem.style.cssText = `
+          padding:8px 12px; border:1px solid var(--muted); border-radius:6px; margin-bottom:8px; 
+          cursor:pointer; background:${currentMistakeSession === session ? 'var(--accent)' : 'var(--panel)'};
+          color:${currentMistakeSession === session ? 'white' : 'var(--text)'};
+        `;
+        
+        const scoreColor = sessionData.scorePercent !== undefined && sessionData.scorePercent >= 80 ? '#10b981' : 
+                          sessionData.scorePercent !== undefined && sessionData.scorePercent >= 60 ? '#f59e0b' : 
+                          sessionData.scorePercent !== undefined ? '#ef4444' : '#999';
+        
+        sessionItem.innerHTML = `
+          <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <div style="font-weight:600;">📝 Session ${session}</div>
+            ${sessionData.scorePercent !== undefined ? `<div style="color:${scoreColor}; font-weight:600;">${sessionData.scorePercent}%</div>` : '<div style="color:#999; font-weight:400;">No data</div>'}
+          </div>
+          <div style="font-size:11px; opacity:0.8;">
+            ${sessionData.date ? `${sessionData.date} ${sessionData.time}` : 'Session created'} 
+            ${sessionData.totalQuestions ? `• ${sessionData.totalQuestions}Q` : ''} 
+            ${sessionData.mistakeCount !== undefined ? `• ${sessionData.mistakeCount} mistakes` : ''} 
+            ${wordCount > 0 ? `• ${wordCount} words` : ''}
+            ${sessionData.quizType ? `• ${sessionData.quizType}` : ''}
+          </div>
+        `;
+        
+        sessionItem.addEventListener('click', () => selectMistakeSession(session));
+        sessionList.appendChild(sessionItem);
+      });
+    }
+    
+    function selectMistakeSession(sessionId) {
+      console.log(`*** SELECTING MISTAKE SESSION: ${sessionId} (was: ${currentMistakeSession}) ***`);
+      console.trace('Session selection called from:');
+      currentMistakeSession = sessionId;
+      updateMistakeSessionSelect();
+      buildQueue();
+      // Quiz question count is now determined by selected groups
+      updateQuizTypeForSession(); // Lock/unlock quiz type based on session
+      toast(`Viewing ${sessionId === 'all' ? 'all mistake sessions' : 'Session ' + sessionId}`);
+    }
+    
+    function getMistakeSessions() {
+      const sessions = new Set();
+      
+      // Add sessions from card data (words that have mistakes)
+      cards.forEach(card => {
+        if (card.mistake_sessions) {
+          card.mistake_sessions.forEach(session => sessions.add(session));
+        }
+      });
+      
+      // Add all sessions from metadata (includes sessions with no mistakes)
+      Object.keys(mistakeSessionData).forEach(sessionId => {
+        sessions.add(sessionId);
+      });
+      
+      console.log('All sessions found:', Array.from(sessions));
+      console.log('Session metadata available:', Object.keys(mistakeSessionData));
+      return Array.from(sessions).sort((a, b) => b - a); // newest first
+    }
+    
+    $('#newSessionBtn').addEventListener('click', () => {
+      const newSessionId = mistakeSessionCounter++;
+      currentMistakeSession = newSessionId.toString();
+      currentSessionStarted = false;
+      updateMistakeSessionSelect();
+      toast(`Created new mistake session: Session ${newSessionId}`);
+    });
+    
+    $$('.tab').forEach(btn=> btn.addEventListener('click', ()=>{
+      $$('.tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+      ['study','quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = (btn.dataset.tab===n)?'block':'none');
+      // Update quiz options when switching to quiz tab
+      if (btn.dataset.tab === 'quiz') {
+        setTimeout(() => {
+          // Quiz question count is now determined by selected groups
+          updateQuizTypeForSession(); // Update quiz type dropdown state
+        }, 50); // Small delay to ensure tab is visible
+      }
+    }));
+    
+
+    // Form handlers
+    $('#addCardBtn').addEventListener('click', ()=>{
+      const word = $('#inWord').value.trim(); if(!word){ alert('Please enter a word.'); return; }
+      addCard({
+        word,
+        definition: $('#inDef').value.trim(),
+        example: $('#inEx').value.trim(),
+        morphology: $('#inMorph').value.trim(),
+        synonyms: $('#inSyn').value.trim(),
+        antonyms: $('#inAnt').value.trim(),
+        pos: $('#inPOS').value
+      });
+      clearForm(); buildQueue(); toast('Card added');
+    });
+    $('#clearForm').addEventListener('click', clearForm);
+    function clearForm(){ ['#inWord','#inDef','#inEx','#inMorph','#inSyn','#inAnt'].forEach(id=> $(id).value=''); $('#inPOS').value=''; }
+
+    // Table actions
+    $('#cardsTable').addEventListener('click', (e)=>{
+      const id = e.target.getAttribute('data-del');
+      const eid = e.target.getAttribute('data-edit');
+      if(id){ if(confirm('Delete this card?')){ deleteCard(id); buildQueue(); updateSelectionUI(); }}
+      if(eid){ const c = cards.find(x=>x.id===eid); if(!c) return; fillForm(c); deleteCard(eid); }
+    });
+    
+    // Bulk deletion functionality
+    $('#selectAll').addEventListener('change', (e)=>{
+      const checkboxes = document.querySelectorAll('.card-checkbox');
+      checkboxes.forEach(cb => cb.checked = e.target.checked);
+      updateSelectionUI();
+    });
+    
+    document.addEventListener('change', (e)=>{
+      if(e.target.classList.contains('card-checkbox')) {
+        updateSelectionUI();
+      }
+    });
+    
+    $('#bulkDeleteBtn').addEventListener('click', ()=>{
+      const selectedIds = Array.from(document.querySelectorAll('.card-checkbox:checked')).map(cb => cb.dataset.id);
+      if(selectedIds.length === 0) return;
+      
+      if(confirm(`Delete ${selectedIds.length} selected cards? This cannot be undone.`)) {
+        selectedIds.forEach(id => deleteCard(id));
+        buildQueue();
+        updateSelectionUI();
+        toast(`Deleted ${selectedIds.length} cards`);
+      }
+    });
+    
+    function updateSelectionUI() {
+      const checkboxes = document.querySelectorAll('.card-checkbox');
+      const checkedBoxes = document.querySelectorAll('.card-checkbox:checked');
+      const selectAllCheckbox = $('#selectAll');
+      const bulkDeleteBtn = $('#bulkDeleteBtn');
+      const selectionCount = $('#selectionCount');
+      
+      // Update select all checkbox state
+      if(checkedBoxes.length === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+      } else if(checkedBoxes.length === checkboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+      } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+      }
+      
+      // Show/hide bulk delete button and update count
+      if(checkedBoxes.length > 0) {
+        bulkDeleteBtn.style.display = 'inline-block';
+        selectionCount.textContent = `${checkedBoxes.length} selected`;
+      } else {
+        bulkDeleteBtn.style.display = 'none';
+        selectionCount.textContent = '';
+      }
+    }
+    
+    // Duplicate detection functionality
+    $('#findDuplicatesBtn').addEventListener('click', findAndShowDuplicates);
+    $('#cancelDuplicates').addEventListener('click', closeDuplicateModal);
+    $('#deleteDuplicatesBtn').addEventListener('click', deleteSelectedDuplicates);
+    $('#autoResolveDuplicatesBtn').addEventListener('click', autoResolveDuplicates);
+    
+    function findAndShowDuplicates() {
+      const duplicates = findDuplicateWords();
+      if (duplicates.length === 0) {
+        toast('No duplicate words found!');
+        return;
+      }
+      
+      showDuplicateModal(duplicates);
+    }
+    
+    function findDuplicateWords() {
+      const wordGroups = {};
+      
+      // Group cards by word (case-insensitive)
+      cards.forEach(card => {
+        const word = (card.word || '').toLowerCase().trim();
+        if (!word) return;
+        
+        if (!wordGroups[word]) {
+          wordGroups[word] = [];
+        }
+        wordGroups[word].push(card);
+      });
+      
+      // Return only groups with more than one card
+      return Object.values(wordGroups).filter(group => group.length > 1);
+    }
+    
+    function showDuplicateModal(duplicateGroups) {
+      const modal = $('#duplicateModal');
+      const container = $('#duplicateGroups');
+      
+      container.innerHTML = '';
+      
+      duplicateGroups.forEach((group, groupIndex) => {
+        const groupDiv = document.createElement('div');
+        groupDiv.style.cssText = 'margin-bottom:24px; border:1px solid var(--muted); border-radius:12px; padding:16px;';
+        
+        const groupHeader = document.createElement('h4');
+        groupHeader.textContent = `"${group[0].word}" (${group.length} duplicates) - Choose which one(s) to DELETE`;
+        groupHeader.style.cssText = 'margin:0 0 12px 0; color:var(--accent);';
+        groupDiv.appendChild(groupHeader);
+        
+        // Create comparison table for this group
+        const table = document.createElement('table');
+        table.style.cssText = 'width:100%; border-collapse:collapse; background:var(--panel);';
+        
+        // Table header
+        table.innerHTML = `
+          <thead>
+            <tr style="border-bottom:1px solid var(--muted);">
+              <th style="padding:8px; text-align:left; width:60px;">Delete?</th>
+              <th style="padding:8px; text-align:left;">Word</th>
+              <th style="padding:8px; text-align:left;">Definition</th>
+              <th style="padding:8px; text-align:left;">Synonyms</th>
+              <th style="padding:8px; text-align:left;">Antonyms</th>
+              <th style="padding:8px; text-align:left;">Example</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        `;
+        
+        const tbody = table.querySelector('tbody');
+        
+        group.forEach((card, cardIndex) => {
+          const row = document.createElement('tr');
+          row.style.cssText = cardIndex % 2 === 0 ? 'background:var(--muted);' : 'background:var(--panel);';
+          
+          row.innerHTML = `
+            <td style="padding:8px; text-align:center;">
+              <input type="checkbox" class="duplicate-checkbox" data-id="${card.id}" style="width:18px; height:18px; cursor:pointer;">
+            </td>
+            <td style="padding:8px; font-weight:600;">
+              ${esc(card.word)}
+              ${card.pos ? `<br><span style="color:var(--sub); font-size:11px;">(${esc(card.pos)})</span>` : ''}
+            </td>
+            <td style="padding:8px; max-width:200px; word-wrap:break-word;">
+              ${esc(card.definition || 'No definition')}
+            </td>
+            <td style="padding:8px; max-width:150px; word-wrap:break-word; font-size:12px;">
+              ${esc(card.synonyms || '—')}
+            </td>
+            <td style="padding:8px; max-width:150px; word-wrap:break-word; font-size:12px;">
+              ${esc(card.antonyms || '—')}
+            </td>
+            <td style="padding:8px; max-width:200px; word-wrap:break-word; font-size:12px; font-style:italic;">
+              ${esc(card.example || '—')}
+            </td>
+          `;
+          
+          tbody.appendChild(row);
+        });
+        
+        groupDiv.appendChild(table);
+        container.appendChild(groupDiv);
+      });
+      
+      modal.style.display = 'flex';
+      
+      // Update delete button state when checkboxes change
+      updateDuplicateDeleteButton();
+    }
+    
+    // Add event delegation for duplicate checkboxes
+    $('#duplicateModal').addEventListener('change', (e) => {
+      if (e.target.classList.contains('duplicate-checkbox')) {
+        console.log('Checkbox clicked:', e.target.checked, e.target.dataset.id);
+        updateDuplicateDeleteButton();
+      }
+    });
+    
+    // Also add click event delegation as backup
+    $('#duplicateModal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('duplicate-checkbox')) {
+        setTimeout(() => updateDuplicateDeleteButton(), 10); // Small delay to ensure state is updated
+      }
+    });
+    
+    function updateDuplicateDeleteButton() {
+      const selectedCheckboxes = document.querySelectorAll('.duplicate-checkbox:checked');
+      const deleteBtn = $('#deleteDuplicatesBtn');
+      const count = selectedCheckboxes.length;
+      
+      if (count > 0) {
+        deleteBtn.textContent = `Delete Selected (${count})`;
+        deleteBtn.disabled = false;
+        deleteBtn.style.opacity = '1';
+      } else {
+        deleteBtn.textContent = 'Delete Selected';
+        deleteBtn.disabled = false; // Keep enabled but show no selection
+        deleteBtn.style.opacity = '0.6';
+      }
+    }
+    
+    function closeDuplicateModal() {
+      $('#duplicateModal').style.display = 'none';
+    }
+    
+    function deleteSelectedDuplicates() {
+      const selectedCheckboxes = document.querySelectorAll('.duplicate-checkbox:checked');
+      const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.id);
+      
+      if (selectedIds.length === 0) {
+        toast('No duplicates selected for deletion');
+        return;
+      }
+      
+      if (confirm(`Delete ${selectedIds.length} selected duplicate cards? This cannot be undone.`)) {
+        selectedIds.forEach(id => deleteCard(id));
+        buildQueue();
+        updateSelectionUI();
+        closeDuplicateModal();
+        toast(`Deleted ${selectedIds.length} duplicate cards`);
+      }
+    }
+    
+    async function autoResolveDuplicates() {
+      const duplicates = findDuplicateWords();
+      let totalDeleted = 0;
+      
+      if (confirm(`Auto-resolve ${duplicates.length} duplicate groups using smart rules?\n\n1. Keep words with definitions\n2. Keep words with unique synonyms\n3. Delete identical duplicates (keep only one)\n\nThis cannot be undone.`)) {
+        
+        // Show processing message
+        const autoBtn = $('#autoResolveDuplicatesBtn');
+        const originalText = autoBtn.textContent;
+        autoBtn.textContent = '⏳ Processing...';
+        autoBtn.disabled = true;
+        
+        // Process in batches to avoid blocking
+        for (let i = 0; i < duplicates.length; i++) {
+          const group = duplicates[i];
+          const toDelete = resolveDuplicateGroupFast(group);
+          
+          toDelete.forEach(card => {
+            deleteCard(card.id);
+            totalDeleted++;
+          });
+          
+          // Yield to browser every 10 groups to prevent blocking
+          if (i % 10 === 0) {
+            await new Promise(resolve => setTimeout(resolve, 1));
+          }
+        }
+        
+        buildQueue();
+        closeDuplicateModal();
+        toast(`Auto-resolved: Deleted ${totalDeleted} duplicate cards`);
+      }
+    }
+    
+    function resolveDuplicateGroupFast(group) {
+      if (group.length <= 1) return [];
+      
+      // Quick and simple resolution logic
+      const toDelete = [];
+      let bestCard = null;
+      let bestScore = -1;
+      
+      // Find the best card (simple scoring)
+      group.forEach(card => {
+        let score = 0;
+        
+        if (card.definition && card.definition.trim()) score += 10;
+        if (card.synonyms && card.synonyms.trim()) score += 3;
+        if (card.antonyms && card.antonyms.trim()) score += 3;
+        if (card.example && card.example.trim()) score += 1;
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestCard = card;
+        }
+      });
+      
+      // Delete all except the best one
+      group.forEach(card => {
+        if (card.id !== bestCard.id) {
+          toDelete.push(card);
+        }
+      });
+      
+      return toDelete;
+    }
+    
+    
+    function fillForm(c){ $('#inWord').value=c.word||''; $('#inDef').value=c.definition||''; $('#inEx').value=c.example||''; $('#inMorph').value=c.morphology||''; $('#inSyn').value=c.synonyms||''; $('#inAnt').value=c.antonyms||''; $('#inPOS').value=c.pos||''; }
+
+    // Import / Export
+    $('#exportBtn2').addEventListener('click', exportJSON);
+    $('#exportCSV').addEventListener('click', exportCSV);
+
+    function getSelectedExportCards() {
+      const selectedGroupIds = new Set();
+      const exportGroupCheckboxes = $$('#exportGroupCheckboxes input[type="checkbox"]:checked');
+      
+      // If no checkboxes are checked, use all groups
+      if (exportGroupCheckboxes.length === 0) {
+        return cards; // Return all cards if none selected
+      }
+      
+      exportGroupCheckboxes.forEach(cb => {
+        selectedGroupIds.add(cb.dataset.groupId);
+      });
+      
+      const selectedCardIds = new Set();
+      wordGroups.forEach(group => {
+        if (selectedGroupIds.has(group.id)) {
+          group.cardIds.forEach(cardId => selectedCardIds.add(cardId));
+        }
+      });
+      
+      return cards.filter(card => selectedCardIds.has(card.id));
+    }
+    
+    function exportJSON(){
+      const cardsToExport = getSelectedExportCards();
+      const blob = new Blob([JSON.stringify(cardsToExport,null,2)], {type:'application/json'});
+      const exportGroupCheckboxes = $$('#exportGroupCheckboxes input[type="checkbox"]:checked');
+      const filename = exportGroupCheckboxes.length === 0 ? 'vocab_cards_all.json' : 'vocab_cards_selected_groups.json';
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+      toast(`Exported ${cardsToExport.length} cards to JSON`);
+    }
+    
+    function exportCSV(){
+      const cardsToExport = getSelectedExportCards();
+      const headers = ['word','definition','example','morphology','synonyms','antonyms','pos'];
+      const rows = cardsToExport.map(c=> headers.map(h=> csvCell(c[h]||''))); 
+      const csv = [headers.join(','), ...rows.map(r=> r.join(','))].join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const exportGroupCheckboxes = $$('#exportGroupCheckboxes input[type="checkbox"]:checked');
+      const filename = exportGroupCheckboxes.length === 0 ? 'vocab_cards_all.csv' : 'vocab_cards_selected_groups.csv';
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+      toast(`Exported ${cardsToExport.length} cards to CSV`);
+    }
+    function csvCell(v){ v = (''+v).replace(/"/g,'""'); if(/[",\n]/.test(v)) return '"'+v+'"'; return v; }
+
+    $('#importFile').addEventListener('change', async (e)=>{
+      const file = e.target.files[0]; if(!file) return;
+      const ext = file.name.toLowerCase();
+      console.log('Importing file:', file.name, 'Type:', ext, 'Size:', formatBytes(file.size));
+      
+      // Enhanced file size and storage validation
+      if(!await validateImport(file)) {
+        e.target.value = '';
+        return;
+      }
+      
+      try{
+        let data = [];
+        
+        // Show progress indicator
+        showImportProgress('Reading file...');
+        
+        if(ext.endsWith('.json')){
+          const text = await file.text();
+          showImportProgress('Parsing JSON...');
+          const arr = JSON.parse(text);
+          if(!Array.isArray(arr)) throw new Error('JSON must be an array of vocabulary objects');
+          data = arr;
+        } 
+        else if(ext.endsWith('.csv') || ext.endsWith('.tsv') || ext.endsWith('.txt')){
+          const text = await file.text();
+          showImportProgress('Parsing CSV...');
+          console.log('CSV text preview:', text.substring(0, 200));
+          data = parseCSV(text);
+          console.log('Parsed CSV data:', data.slice(0, 3));
+        }
+        else if(ext.endsWith('.xlsx') || ext.endsWith('.xls')){
+          showImportProgress('Loading Excel parser...');
+          data = await parseExcel(file);
+        }
+        else if(ext.endsWith('.pdf')){
+          showImportProgress('Loading PDF parser...');
+          data = await parsePDF(file);
+        }
+        else if(ext.match(/\.(jpg|jpeg|png|gif|bmp)$/)){
+          showImportProgress('Loading OCR engine...');
+          data = await parseImage(file);
+        }
+        else { 
+          throw new Error('Unsupported file type. Please use JSON, CSV, TSV, Excel, PDF, or Image files.');
+        }
+        
+        if(!data || !Array.isArray(data) || data.length === 0) {
+          throw new Error('No valid vocabulary data found in file');
+        }
+        
+        // Process data in chunks to avoid memory issues
+        await processImportChunks(data, file.name);
+        hideImportProgress();
+        
+      }catch(err){ 
+        hideImportProgress();
+        showImportError(err.message, file.name);
+        console.error('Import error:', err);
+      }
+      e.target.value = '';
+    });
+
+    // Enhanced file validation
+    async function validateImport(file) {
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
+      const STORAGE_LIMIT = 5 * 1024 * 1024;  // 5MB localStorage estimate
+      
+      // Check file size
+      if(file.size > MAX_FILE_SIZE) {
+        const result = confirm(
+          `⚠️ Large File Warning\n\n` +
+          `File size: ${formatBytes(file.size)}\n` +
+          `This may cause browser slowdown or crashes.\n\n` +
+          `Recommendations:\n` +
+          `• Split file into smaller chunks (<${formatBytes(MAX_FILE_SIZE/2)})\n` +
+          `• Use the storage diagnostic tool\n\n` +
+          `Continue anyway?`
+        );
+        if(!result) return false;
+      }
+      
+      // Check current storage usage
+      const currentUsage = getCurrentStorageSize();
+      const storagePercent = (currentUsage / STORAGE_LIMIT) * 100;
+      
+      if(storagePercent > 80) {
+        const result = confirm(
+          `⚠️ Storage Nearly Full\n\n` +
+          `Current usage: ${formatBytes(currentUsage)} (${storagePercent.toFixed(1)}%)\n` +
+          `Estimated limit: ${formatBytes(STORAGE_LIMIT)}\n\n` +
+          `Recommendations:\n` +
+          `• Export and backup current data\n` +
+          `• Clear some vocabulary cards\n` +
+          `• Import smaller files\n\n` +
+          `Continue anyway?`
+        );
+        if(!result) return false;
+      }
+      
+      return true;
+    }
+    
+    // Progress indicator functions
+    function showImportProgress(message) {
+      toast(message, 0); // 0 = don't auto-hide
+      console.log('Import progress:', message);
+    }
+    
+    function hideImportProgress() {
+      // Hide any persistent toasts
+      const toasts = document.querySelectorAll('.toast');
+      toasts.forEach(t => t.remove());
+    }
+    
+    // Enhanced error reporting
+    function showImportError(message, filename) {
+      const errorDetails = `
+Import Failed: ${filename}
+
+Error: ${message}
+
+Troubleshooting:
+• Check file format (JSON array or CSV with headers)
+• Ensure file size is reasonable (<5MB)
+• Verify CSV headers match expected format
+• Try splitting large files into smaller chunks
+• Use the storage diagnostic tool
+
+Expected CSV format:
+word,definition,example,synonyms,antonyms,pos
+
+Expected JSON format:
+[{"word":"example","definition":"..."}]
+      `.trim();
+      
+      alert(errorDetails);
+    }
+    
+    // Process large imports in chunks
+    async function processImportChunks(data, filename) {
+      const CHUNK_SIZE = 50; // Process 50 items at a time
+      const totalItems = data.length;
+      let processed = 0;
+      let successful = 0;
+      let errors = [];
+      
+      console.log(`Processing ${totalItems} items in chunks of ${CHUNK_SIZE}`);
+      
+      for(let i = 0; i < totalItems; i += CHUNK_SIZE) {
+        const chunk = data.slice(i, i + CHUNK_SIZE);
+        const chunkProgress = Math.min(i + CHUNK_SIZE, totalItems);
+        
+        showImportProgress(`Processing ${chunkProgress}/${totalItems} items...`);
+        
+        // Process chunk with error handling
+        for(let j = 0; j < chunk.length; j++) {
+          try {
+            const cleanedData = cleanImport(chunk[j]);
+            
+            // Validate required fields
+            if(!cleanedData.word || cleanedData.word.trim() === '') {
+              throw new Error(`Item ${processed + 1}: Missing word field`);
+            }
+            
+            addCard(cleanedData);
+            successful++;
+          } catch(err) {
+            errors.push(`Item ${processed + 1}: ${err.message}`);
+            console.warn(`Import warning for item ${processed + 1}:`, err);
+          }
+          processed++;
+        }
+        
+        // Small delay to prevent browser freeze
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        // Check storage periodically
+        if(i % (CHUNK_SIZE * 4) === 0) {
+          try {
+            saveCards(); // Test if we can still save
+          } catch(storageErr) {
+            throw new Error(`Storage full after ${successful} items. Export data and clear storage.`);
+          }
+        }
+      }
+      
+      buildQueue();
+      
+      // Show final results
+      let resultMessage = `Import Complete: ${filename}\n\n`;
+      resultMessage += `✅ Successfully imported: ${successful}/${totalItems} items\n`;
+      
+      if(errors.length > 0) {
+        resultMessage += `⚠️ Warnings: ${errors.length} items\n\n`;
+        if(errors.length <= 5) {
+          resultMessage += `Issues:\n${errors.join('\n')}`;
+        } else {
+          resultMessage += `First 5 issues:\n${errors.slice(0, 5).join('\n')}\n... and ${errors.length - 5} more`;
+        }
+      }
+      
+      console.log('Import completed:', { successful, errors: errors.length, total: totalItems });
+      toast(`✅ Imported ${successful} vocabulary cards`, 5000);
+      
+      if(errors.length > 0) {
+        setTimeout(() => alert(resultMessage), 100);
+      }
+    }
+    
+    // Helper functions
+    function getCurrentStorageSize() {
+      let total = 0;
+      for(let key in localStorage) {
+        if(localStorage.hasOwnProperty(key)) {
+          total += new Blob([localStorage.getItem(key)]).size;
+        }
+      }
+      return total;
+    }
+    
+    function formatBytes(bytes) {
+      if(bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function cleanImport(o){
+      // Enhanced flexible mapping for various column names
+      const getField = (obj, ...keys) => keys.find(k => obj[k] !== undefined && obj[k] !== '') ? obj[keys.find(k => obj[k] !== undefined && obj[k] !== '')] : '';
+      
+      return {
+        word: getField(o, 'word', 'Word', 'WORD', 'Words', 'words', 'term', 'Term', 'vocabulary', 'Vocabulary'),
+        definition: getField(o, 'definition', 'Definition', 'DEFINITION', 'meaning', 'Meaning', 'desc', 'Description', 'def', 'Def'),
+        example: getField(o, 'example', 'Example', 'EXAMPLE', 'Examples', 'examples', 'sentence', 'Sentence', 'Example Sentences', 'example sentences', 'Example Sentence', 'example sentence', 'example_sentence', 'Example_Sentence'),
+        morphology: getField(o, 'morphology', 'Morphology', 'MORPHOLOGY', 'root', 'Root', 'etymology', 'Etymology', 'morph', 'Morph'),
+        synonyms: getField(o, 'synonyms', 'Synonyms', 'SYNONYMS', 'Synonym', 'synonym', 'similar', 'Similar', 'syn', 'Syn'),
+        antonyms: getField(o, 'antonyms', 'Antonyms', 'ANTONYMS', 'Antonym', 'antonym', 'opposite', 'Opposite', 'ant', 'Ant'),
+        pos: getField(o, 'pos', 'POS', 'part_of_speech', 'Part of Speech', 'type', 'Type', 'Word type', 'word type', 'Word Type', 'category', 'Category', 'speech_part', 'Speech Part')
+      };
+    };
+
+    // Excel parser function
+    async function parseExcel(file) {
+      toast('Loading Excel parser...');
+      if (!window.XLSX) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        document.head.appendChild(script);
+        await new Promise(resolve => script.onload = resolve);
+      }
+      
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, {type: 'array'});
+      
+      const allData = [];
+      const sheetSummary = [];
+      
+      // Process all sheets
+      for (const sheetName of workbook.SheetNames) {
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+        
+        if (jsonData.length < 2) {
+          console.log(`Skipping sheet "${sheetName}" - no data or headers only`);
+          continue;
+        }
+        
+        const headers = jsonData[0].map(h => String(h || '').trim());
+        const sheetData = jsonData.slice(1)
+          .filter(row => row.some(cell => cell !== undefined && cell !== ''))
+          .map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+              if (header && row[index] !== undefined) {
+                obj[header] = String(row[index] || '').trim();
+              }
+            });
+            return obj;
+          })
+          .filter(obj => {
+            // Only include rows that have at least a word or definition
+            const hasWord = Object.keys(obj).some(key => 
+              key.toLowerCase().includes('word') && obj[key]
+            );
+            const hasDefinition = Object.keys(obj).some(key => 
+              key.toLowerCase().includes('definition') && obj[key]
+            );
+            return hasWord || hasDefinition;
+          });
+        
+        if (sheetData.length > 0) {
+          allData.push(...sheetData);
+          sheetSummary.push(`${sheetName}(${sheetData.length})`);
+          console.log(`Processed sheet "${sheetName}": ${sheetData.length} rows`);
+        } else {
+          console.log(`Skipped sheet "${sheetName}" - no valid vocabulary data`);
+        }
+      }
+      
+      if (sheetSummary.length > 1) {
+        toast(`Imported from ${sheetSummary.length} sheets: ${sheetSummary.join(', ')}`);
+      }
+      
+      console.log(`Total Excel import: ${allData.length} items from ${sheetSummary.length} sheets`);
+      return allData;
+    }
+
+    // PDF parser function
+    async function parsePDF(file) {
+      toast('Loading PDF parser...');
+      if (!window.pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        document.head.appendChild(script);
+        await new Promise(resolve => script.onload = resolve);
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+      
+      const data = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument(data).promise;
+      let fullText = '';
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(' ');
+        fullText += pageText + '\n';
+      }
+      
+      return extractVocabFromText(fullText);
+    }
+
+    // Image OCR parser function
+    async function parseImage(file) {
+      toast('Loading OCR engine...');
+      if (!window.Tesseract) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js';
+        document.head.appendChild(script);
+        await new Promise(resolve => script.onload = resolve);
+      }
+      
+      const result = await Tesseract.recognize(file, 'eng', {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            toast(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+          }
+        }
+      });
+      
+      return extractVocabFromText(result.data.text);
+    }
+
+    // Smart vocabulary extraction from text
+    function extractVocabFromText(text) {
+      const lines = text.split('\n').filter(line => line.trim());
+      const vocabList = [];
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        // Pattern 1: Structured format like "word - definition, synonyms: syn1,syn2, antonyms: ant1,ant2"
+        let match = line.match(/^([^-:]+)\s*[-:]\s*([^,]+)(?:,\s*synonyms?:\s*([^,]+))?(?:,\s*antonyms?:\s*([^,]+))?(?:,\s*examples?:\s*(.+))?$/i);
+        if (match && match[1].split(' ').length <= 3) {
+          vocabList.push({
+            word: match[1].trim(),
+            definition: match[2].trim(),
+            synonyms: match[3] ? match[3].trim() : '',
+            antonyms: match[4] ? match[4].trim() : '',
+            example: match[5] ? match[5].trim() : ''
+          });
+          continue;
+        }
+        
+        // Pattern 2: Simple "word - definition" format
+        match = line.match(/^([^-:]+)\s*[-:]\s*(.+)$/);
+        if (match && match[1].split(' ').length <= 3) {
+          vocabList.push({
+            word: match[1].trim(),
+            definition: match[2].trim(),
+            example: '',
+            synonyms: '',
+            antonyms: ''
+          });
+          continue;
+        }
+        
+        // Pattern 3: Multi-line format - word on one line, definition on next
+        if (line.length <= 25 && /^[a-zA-Z'\s-]+$/.test(line) && line.split(' ').length <= 3) {
+          const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : '';
+          if (nextLine && nextLine.length > line.length) {
+            vocabList.push({
+              word: line,
+              definition: nextLine,
+              example: '',
+              synonyms: '',
+              antonyms: ''
+            });
+            i++; // Skip next line since we used it as definition
+            continue;
+          }
+        }
+        
+        // Pattern 4: Detect CSV-like format in text
+        if (line.includes(',') && line.split(',').length >= 3) {
+          const parts = line.split(',').map(p => p.trim());
+          if (parts.length >= 2 && parts[0].split(' ').length <= 3) {
+            vocabList.push({
+              word: parts[0] || '',
+              definition: parts[1] || '',
+              example: parts[2] || '',
+              synonyms: parts[3] || '',
+              antonyms: parts[4] || ''
+            });
+            continue;
+          }
+        }
+      }
+      
+      // If no structured patterns found, extract likely vocabulary words
+      if (vocabList.length === 0) {
+        const words = text.match(/\b[A-Za-z]{4,}\b/g) || [];
+        const uniqueWords = [...new Set(words)].slice(0, 20); // Limit to 20 words
+        uniqueWords.forEach(word => {
+          vocabList.push({
+            word: word.toLowerCase(),
+            definition: '[Definition needed - use auto-fill feature]',
+            example: '',
+            synonyms: '',
+            antonyms: ''
+          });
+        });
+      }
+      
+      return vocabList;
+    }
+
+    function parseCSV(text){
+      const t = text.replace(/\r/g,'');
+      const lines = t.split('\n').filter(Boolean);
+      if(lines.length===0) return [];
+      const first = lines[0];
+      const isTSV = (first.indexOf('	')>-1) && (first.indexOf(',')===-1);
+      const heads = isTSV ? first.split('	') : splitCSVLine(first);
+      return lines.slice(1).map(line=>{
+        const cells = isTSV ? line.split('	') : splitCSVLine(line);
+        const o = {}; heads.forEach((h,i)=> o[h.trim()] = (cells[i]||'').trim());
+        return o;
+      });
+    }
+    function splitCSVLine(line){
+      const out=[]; let cur=''; let inQ=false; for(let i=0;i<line.length;i++){
+        const ch=line[i]; const nx=line[i+1];
+        if(inQ){ if(ch==='"'){ if(nx==='"'){ cur+='"'; i++; } else { inQ=false; } } else { cur+=ch; } }
+        else { if(ch===','){ out.push(cur); cur=''; } else if(ch==='"'){ inQ=true; } else { cur+=ch; } }
+      }
+      out.push(cur); return out;
+    }
+
+    // Quiz question count is now determined by selected groups at quiz start time
+    
+    // Update session info display
+    function updateSessionInfo() {
+      const sessionInfo = $('#sessionQuizInfo');
+      const currentSessionInfo = $('#currentSessionInfo');
+      if (sessionInfo && currentSessionInfo) {
+        if (viewMode === 'mistakes') {
+          sessionInfo.style.display = 'block';
+          // Get the available card count for display
+          let availableCardCount = 0;
+          if (currentMistakeSession === 'all') {
+            // Count all cards that have ever been in any mistake session
+            availableCardCount = cards.filter(c => c.mistake_sessions && c.mistake_sessions.length > 0).length;
+            currentSessionInfo.textContent = `All sessions (${availableCardCount} words from all sessions)`;
+          } else {
+            availableCardCount = cards.filter(c => c.mistake_sessions && c.mistake_sessions.includes(currentMistakeSession)).length;
+            currentSessionInfo.textContent = `Session ${currentMistakeSession} (${availableCardCount} words)`;
+          }
+        } else {
+          sessionInfo.style.display = 'none';
+        }
+      }
+    }
+    
+    // Function to update quiz type dropdown based on session selection
+    function updateQuizTypeForSession() {
+      const quizTypeSelect = $('#quizType');
+      const lockInfo = $('#quizTypeLockInfo');
+      const sessionInfo = $('#sessionQuizInfo');
+      const currentSessionInfoSpan = $('#currentSessionInfo');
+      
+      if (!quizTypeSelect) return;
+      
+      // Always allow free quiz type selection for mistake sessions
+      // This enables practicing definitions, synonyms, and antonyms for the same mistake words
+      quizTypeSelect.disabled = false;
+      quizTypeSelect.style.opacity = '1';
+      quizTypeSelect.style.cursor = 'pointer';
+      
+      if (viewMode === 'mistakes' && currentMistakeSession !== 'all') {
+        // Show session info but allow quiz type selection
+        const sessionData = mistakeSessionData[currentMistakeSession];
+        if (sessionData) {
+          if (sessionInfo) {
+            sessionInfo.style.display = 'block';
+            if (currentSessionInfoSpan) {
+              currentSessionInfoSpan.textContent = `Session ${currentMistakeSession} - Practice with any quiz type (${sessionData.totalCount} words from original ${sessionData.quizType} quiz)`;
+            }
+          }
+          console.log(`🎯 Mistake session ${currentMistakeSession} active - Quiz type selection enabled for flexible practice`);
+        }
+        // Hide the lock indicator since we're not locking anymore
+        if (lockInfo) lockInfo.style.display = 'none';
+      } else {
+        // Hide session info for other modes
+        if (sessionInfo) sessionInfo.style.display = 'none';
+        if (lockInfo) lockInfo.style.display = 'none';
+      }
+    }
+    
+    // Study logic (SM-2 simplified)
+    function buildQueue(){
+      const now = Date.now();
+      const oneDayAgo = now - (24 * 60 * 60 * 1000);
+      
+      console.log('🎥 BUILD QUEUE: Starting buildQueue');
+      console.log('🎥 Current view mode:', viewMode);
+      
+      // Get cards from active groups
+      const availableCards = getCardsFromActiveGroups();
+      console.log('🎥 Available cards from groups:', availableCards.length);
+      let cardsToStudy = [];
+      
+      if(viewMode === 'saved') {
+        cardsToStudy = availableCards.filter(c=> c.saved);
+      } else if(viewMode === 'mistakes') {
+        if (currentMistakeSession === 'all') {
+          // Get all cards that have ever been in any mistake session (not just currently marked as mistakes)
+          cardsToStudy = availableCards.filter(c=> c.mistake_sessions && c.mistake_sessions.length > 0);
+          console.log(`*** STUDY MODE: All mistake sessions - ${cardsToStudy.length} cards found (all cards that have been in any session) ***`);
+        } else {
+          cardsToStudy = availableCards.filter(c=> c.mistake_sessions && c.mistake_sessions.includes(currentMistakeSession));
+          console.log(`*** STUDY MODE: Session ${currentMistakeSession} - ${cardsToStudy.length} cards found ***`);
+          console.log('Cards with mistakes:', availableCards.filter(c=> c.mistake_sessions && c.mistake_sessions.length > 0).map(c => `${c.word} (sessions: ${c.mistake_sessions})`));
+        }
+      } else if(viewMode === 'due') {
+        const due = availableCards.filter(c=> (c.due||0) <= now);
+        const newOnes = availableCards.filter(c=> !c.seen).slice(0, prefs.newPerDay||0);
+        cardsToStudy = [...due, ...newOnes];
+      } else if(viewMode === 'leeches') {
+        cardsToStudy = availableCards.filter(c=> c.is_leech || (c.wrong_count >= 8 && c.interval < 4));
+      } else if(viewMode === 'overdue') {
+        cardsToStudy = availableCards.filter(c=> (c.due||0) < oneDayAgo);
+      } else if(viewMode === 'slow') {
+        cardsToStudy = availableCards.filter(c=> c.slow_correct);
+      } else if(viewMode === 'new') {
+        cardsToStudy = availableCards.filter(c=> !c.seen || c.reps === 0);
+      } else if(viewMode === 'mature') {
+        cardsToStudy = availableCards.filter(c=> c.interval >= 21 && c.reps >= 3);
+      } else if(viewMode === 'quiz_remaining') {
+        // Quiz completion tracking: show cards that haven't been quizzed in current cycle
+        const currentCycle = getCurrentQuizCycle();
+        cardsToStudy = availableCards.filter(c => !c.quiz_completed || c.quiz_cycle !== currentCycle);
+        console.log('🎥 BUILD QUEUE: Quiz remaining mode - cycle:', currentCycle, 'cards:', cardsToStudy.length);
+      } else {
+        const due = availableCards.filter(c=> (c.due||0) <= now);
+        const newOnes = availableCards.filter(c=> !c.seen).slice(0, prefs.newPerDay||0);
+        
+        console.log('🎥 BUILD QUEUE: Due cards:', due.length);
+        console.log('🎥 BUILD QUEUE: New cards:', newOnes.length);
+        console.log('🎥 BUILD QUEUE: newPerDay setting:', prefs.newPerDay);
+        
+        // Check for overlap between due and newOnes
+        const dueIds = new Set(due.map(c => c.id));
+        const newIds = new Set(newOnes.map(c => c.id));
+        const overlap = newOnes.filter(c => dueIds.has(c.id));
+        console.log('🎥 BUILD QUEUE: Overlapping cards:', overlap.length);
+        
+        cardsToStudy = [...due, ...newOnes];
+        console.log('🎥 BUILD QUEUE: Combined length before dedup:', cardsToStudy.length);
+        
+        // Remove duplicates if any
+        const uniqueCardsMap = new Map();
+        cardsToStudy.forEach(c => uniqueCardsMap.set(c.id, c));
+        cardsToStudy = Array.from(uniqueCardsMap.values());
+        console.log('🎥 BUILD QUEUE: Combined length after dedup:', cardsToStudy.length);
+      }
+      
+      console.log('🎥 BUILD QUEUE: Final cardsToStudy:', cardsToStudy.length);
+      console.log('🎥 BUILD QUEUE: Cards to study:', cardsToStudy.map(c => c.word).slice(0, 5));
+      
+      queue = cardsToStudy.map(c=>c.id);
+      studyCards = [...queue];
+      currentIndex = 0;
+      
+      console.log('🎥 BUILD QUEUE: Final queue length:', queue.length);
+      console.log('🎥 BUILD QUEUE: Final studyCards length:', studyCards.length);
+      
+      // Update progress counter to reflect actual queue
+      if (studyCards.length > 0) {
+        const current = Math.min(currentIndex + 1, studyCards.length);
+        const progressEl = $('#progressCounter');
+        if (progressEl) {
+          progressEl.textContent = `${current}/${studyCards.length}`;
+          console.log('🎥 BUILD QUEUE: Updated progress counter to:', `${current}/${studyCards.length}`);
+        }
+      }
+      
+      nextCard(); refreshUI();
+      // Quiz question count is now determined by selected groups
+    }
+    
+    function updateProgress() {
+      if(studyCards.length > 0) {
+        const current = Math.min(currentIndex + 1, studyCards.length);
+        $('#progressCounter').textContent = `${current}/${studyCards.length}`;
+      }
+    }
+    
+    function updateKPIHighlight(activeMode) {
+      // Remove active class from all KPI items
+      $$('.kpi .item').forEach(item => item.classList.remove('active'));
+      
+      // Add active class to the selected mode
+      if(activeMode === 'total') {
+        $('#kTotalCard').classList.add('active');
+      } else if(activeMode === 'saved') {
+        $('#kSavedCard').classList.add('active');
+      } else if(activeMode === 'mistakes') {
+        $('#kMistakeCard').classList.add('active');
+      } else if(activeMode === 'due') {
+        $('#kDueCard').classList.add('active');
+      } else if(activeMode === 'leeches') {
+        $('#kLeechCard').classList.add('active');
+      } else if(activeMode === 'overdue') {
+        $('#kOverdueCard').classList.add('active');
+      } else if(activeMode === 'slow') {
+        $('#kSlowCard').classList.add('active');
+      } else if(activeMode === 'new') {
+        $('#kNewCard').classList.add('active');
+      } else if(activeMode === 'mature') {
+        $('#kMatureCard').classList.add('active');
+      }
+    }
+
+    function showFront(c){
+      const pronunciation = c.word ? `(${c.word.replace(/(.)/g, '$1-').slice(0, -1)})` : '';
+      $('#studyCard').innerHTML = `
+        <div class="study-header">
+          <h3 class="study-title">📚 Vocabulary Study</h3>
+          <div style="text-align:right">
+            <div class="study-progress" style="font-size:12px;color:#64748b;margin-bottom:4px;">
+              Progress: <span id="progressCounter">1/1</span>
+            </div>
+            ${c.pos ? `<span class="study-pos">${esc(c.pos)}</span>` : '<span class="study-pos">—</span>'}
+          </div>
+        </div>
+        <div class="study-word">${esc(c.word)} <span class='tts' title='Speak' id='speakBtn'>🔊</span></div>
+        <div class="study-pronunciation">${pronunciation}</div>
+        <div style="text-align:center;margin:40px 0;font-size:18px;color:#64748b;">
+          Click "Show details" to see the definition and details
+        </div>
+      `;
+      showingBack = false;
+      // TTS only on manual click, not automatic
+      
+      // Add click handler for TTS
+      const speakBtn = $('#speakBtn');
+      if(speakBtn) {
+        speakBtn.addEventListener('click', ()=> {
+          if(prefs.tts) {
+            speak(c.word);
+          } else {
+            toast('Voice is disabled. Enable in Settings.');
+          }
+        });
+      }
+    }
+
+    function showBack(c){
+      const pronunciation = c.word ? `(${c.word.replace(/(.)/g, '$1-').slice(0, -1)})` : '';
+      const synonymsList = c.synonyms ? c.synonyms.split(',').map(s => `<li>${esc(s.trim())}</li>`).join('') : '<li>None provided</li>';
+      const antonymsList = c.antonyms ? c.antonyms.split(',').map(s => `<li>${esc(s.trim())}</li>`).join('') : '<li>None provided</li>';
+      
+      $('#studyCard').innerHTML = `
+        <div class="study-header">
+          <h3 class="study-title">📚 Vocabulary Study</h3>
+          <div style="text-align:right">
+            <div class="study-progress" style="font-size:12px;color:#64748b;margin-bottom:4px;">
+              Progress: <span id="progressCounter">1/1</span>
+            </div>
+            ${c.pos ? `<span class="study-pos">${esc(c.pos)}</span>` : '<span class="study-pos">—</span>'}
+          </div>
+        </div>
+        
+        <div class="study-word">${esc(c.word)} <span class='tts' title='Speak' id='speakBtn'>🔊</span></div>
+        <div class="study-pronunciation">${pronunciation}</div>
+        
+        <div class="study-definition">
+          <span class="study-label">Definition:</span>
+          ${esc(c.definition || 'No definition provided')}
+        </div>
+        
+        ${c.example ? `<div class="study-example">
+          "${esc(c.example)}"
+        </div>` : ''}
+        
+        ${c.morphology ? `<div class="study-morphology">
+          <span class="study-label">Etymology/Morphology:</span> ${esc(c.morphology)}
+        </div>` : ''}
+        
+        <div class="study-bottom">
+          <div class="study-column">
+            <span class="study-label">Synonyms:</span>
+            <ul class="study-list">${synonymsList}</ul>
+          </div>
+          <div class="study-column">
+            <span class="study-label">Antonyms:</span>
+            <ul class="study-list">${antonymsList}</ul>
+          </div>
+        </div>
+      `;
+      showingBack = true;
+      
+      // Add click handler for TTS in back view
+      const speakBtn = $('#speakBtn');
+      if(speakBtn) {
+        speakBtn.addEventListener('click', ()=> {
+          if(prefs.tts) {
+            speak(c.word);
+          } else {
+            toast('Voice is disabled. Enable in Settings.');
+          }
+        });
+      }
+    }
+
+    function speak(text){
+      try{ const u = new SpeechSynthesisUtterance(text); speechSynthesis.cancel(); speechSynthesis.speak(u);}catch{}
+    }
+
+    function rateCard(grade){
+      if(!currentId) return;
+      const idx = cards.findIndex(c=>c.id===currentId); if(idx<0) return;
+      const c = cards[idx];
+      // First see rule
+      c.seen = true;
+      if(grade < 3){ c.reps = 0; c.interval = 0; c.due = Date.now() + 10*60*1000; } // 10 min
+      else {
+        if(c.reps===0){ c.interval = 1; }
+        else if(c.reps===1){ c.interval = 6; }
+        else { c.interval = Math.round(c.interval * c.ef); }
+        c.ef = Math.max(1.3, c.ef + (0.1 - (5-grade)*(0.08 + (5-grade)*0.02)));
+        c.reps += 1;
+        c.due = Date.now() + c.interval*24*60*60*1000;
+      }
+      saveCards();
+      nextCard();
+      // update streak date
+      const t = todayISO(); prefs.lastStudy = t; savePrefs(); refreshUI();
+    }
+
+    function nextCard(){
+      if(currentIndex >= studyCards.length){ 
+        $('#studyCard').innerHTML = `<div class='study-word'>All done! 🎉</div><div class='study-def'>No cards due right now.</div>`; 
+        currentId=null; 
+        return; 
+      }
+      currentId = studyCards[currentIndex];
+      const c = cards.find(x=>x.id===currentId);
+      if(!c){ 
+        currentIndex++;
+        nextCard(); 
+        return; 
+      }
+      showFront(c);
+      $('#revealBtn').innerHTML = '📋 Show details';
+      updateProgress();
+    }
+
+    let currentIndex = 0;
+    let studyCards = [];
+    
+    $('#revealBtn').addEventListener('click', ()=>{ 
+      if(!currentId) return; 
+      const c = cards.find(x=>x.id===currentId); 
+      if(!c) return; 
+      if(!showingBack) { 
+        showBack(c); 
+        $('#revealBtn').innerHTML = '📋 Hide details';
+      } else { 
+        showFront(c); 
+        $('#revealBtn').innerHTML = '📋 Show details';
+      }
+    });
+    
+    $('#backBtn').addEventListener('click', ()=>{ 
+      if(currentIndex > 0) {
+        currentIndex--;
+        currentId = studyCards[currentIndex];
+        const c = cards.find(x=>x.id===currentId);
+        if(c) {
+          showFront(c);
+          $('#revealBtn').innerHTML = '📋 Show details';
+          updateProgress();
+        }
+      }
+    });
+    
+    $('#nextBtn').addEventListener('click', ()=>{ 
+      currentIndex++;
+      nextCard(); 
+    });
+    
+    $('#saveBtn').addEventListener('click', ()=>{ 
+      if(currentId) {
+        const c = cards.find(x=>x.id===currentId);
+        if(c && !c.saved) {
+          c.saved = true;
+          saveCards();
+          toast('Word saved!');
+        }
+      }
+    });
+
+    document.addEventListener('keydown', (e)=>{
+      if(e.key===' '){ e.preventDefault(); $('#revealBtn').click(); }
+      if(e.key==='ArrowLeft') $('#backBtn').click();
+      if(e.key==='ArrowRight') $('#nextBtn').click();
+      if(e.key==='s') $('#saveBtn').click();
+      if(e.key==='?') help();
+    });
+
+    $('#setNewPerDay').addEventListener('input', e=>{ prefs.newPerDay = +e.target.value; savePrefs(); buildQueue(); });
+    $('#setMaxReviews').addEventListener('input', e=>{ prefs.maxReviews = +e.target.value; savePrefs(); });
+    $('#setTTS').addEventListener('change', e=>{ prefs.tts = !!e.target.checked; savePrefs(); });
+    $('#setKidMode').addEventListener('change', e=>{ prefs.kid = !!e.target.checked; document.body.style.fontSize = prefs.kid? '18px':'16px'; savePrefs(); });
+
+    function toast(msg){ const el = document.createElement('div'); el.textContent=msg; Object.assign(el.style,{position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',background:'#1f2937',color:'#e5e7eb',padding:'10px 14px',borderRadius:'12px',border:'1px solid #334155',zIndex:99}); document.body.appendChild(el); setTimeout(()=> el.remove(), 1400); }
+
+    function help(){
+      alert(`Quick help:\n\n• Add cards in Manage tab.\n• Study: press Space to reveal, then 1–4 to rate (Again/Hard/Good/Easy).\n• Import/Export JSON or CSV.\n• Everything stays on this device. Share this .html file to distribute.`);
+    }
+
+    // Auto-fill missing definitions via dictionaryapi.dev
+    let _fillAbort = false;
+    async function fetchDef(word){
+      try{
+        const r = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word));
+        if(!r.ok) return {def:'', ex:'', pos:''};
+        const data = await r.json();
+        const m = (data?.[0]?.meanings||[])[0];
+        const d = m?.definitions?.[0]?.definition || '';
+        const e = m?.definitions?.[0]?.example || '';
+        const p = m?.partOfSpeech || '';
+        return {def:d, ex:e, pos:p};
+      }catch{ return {def:'', ex:'', pos:''}; }
+    }
+    
+    async function fetchPOS(word){
+      try{
+        // Clean and validate the word first
+        const cleanWord = word.toLowerCase().trim();
+        
+        // Skip if word contains problematic patterns
+        if(!cleanWord || 
+           cleanWord.includes(' ') ||  // Skip phrases
+           cleanWord.includes('-') ||  // Skip hyphenated compounds
+           cleanWord.includes('(') ||  // Skip words with parentheses
+           cleanWord.includes(')') ||
+           cleanWord.length > 20 ||    // Skip very long words
+           cleanWord.length < 2) {     // Skip very short words
+          console.log(`Skipping word "${word}" - not suitable for dictionary lookup`);
+          return '';
+        }
+        
+        const r = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(cleanWord));
+        if(!r.ok) {
+          console.log(`Dictionary lookup failed for "${word}" - word not found`);
+          return '';
+        }
+        const data = await r.json();
+        const m = (data?.[0]?.meanings||[])[0];
+        const pos = m?.partOfSpeech || '';
+        if(pos) {
+          console.log(`Found part of speech for "${word}": ${pos}`);
+        }
+        return pos;
+      }catch(err){ 
+        console.log(`Error fetching POS for "${word}":`, err.message);
+        return ''; 
+      }
+    }
+    async function fillMissingDefinitions(){
+      const targets = cards.filter(c=> (c.word||'').trim() && !(c.definition||'').trim());
+      if(targets.length===0){ toast('No missing definitions.'); return; }
+      _fillAbort = false;
+      $('#stopFill').style.display='inline-block';
+      let done=0;
+      for(const c of targets){
+        if(_fillAbort) break;
+        $('#status').textContent = `Filling defs ${++done}/${targets.length}`;
+        const {def, ex} = await fetchDef(c.word.trim());
+        if(def){ c.definition = def; if(ex && !c.example) c.example = ex; saveCards(); }
+        await new Promise(r=>setTimeout(r,140)); // gentle throttle
+      }
+      $('#stopFill').style.display='none';
+      $('#status').textContent = `${cards.length} cards saved`;
+      toast('Fill complete');
+      refreshUI();
+    }
+    
+    async function fillMissingPOS(){
+      const targets = cards.filter(c=> (c.word||'').trim() && !(c.pos||'').trim());
+      if(targets.length===0){ toast('No missing word types.'); return; }
+      
+      _fillAbort = false;
+      $('#stopPOSFill').style.display='inline-block';
+      $('#fillPOSBtn').disabled = true;
+      
+      let done = 0;
+      let found = 0;
+      let skipped = 0;
+      
+      console.log(`Starting word type fill for ${targets.length} words`);
+      
+      for(const c of targets){
+        if(_fillAbort) {
+          console.log('Fill process aborted by user');
+          break;
+        }
+        
+        done++;
+        $('#status').textContent = `Filling word types ${done}/${targets.length} (found: ${found}, skipped: ${skipped})`;
+        
+        const pos = await fetchPOS(c.word.trim());
+        if(pos){ 
+          c.pos = pos; 
+          found++;
+          saveCards(); 
+          console.log(`✓ Updated "${c.word}" with part of speech: ${pos}`);
+        } else {
+          skipped++;
+          console.log(`✗ Skipped "${c.word}" - no part of speech found`);
+        }
+        
+        // Gentle throttle to avoid overwhelming the API
+        await new Promise(r=>setTimeout(r,200));
+      }
+      
+      $('#stopPOSFill').style.display='none';
+      $('#fillPOSBtn').disabled = false;
+      $('#status').textContent = `${cards.length} cards saved`;
+      
+      if(!_fillAbort) {
+        toast(`Word type fill complete: ${found} found, ${skipped} skipped`);
+        console.log(`Word type fill completed: ${found} parts of speech found, ${skipped} words skipped`);
+      }
+      
+      refreshUI();
+    }
+    
+    $('#fillDefsBtn').addEventListener('click', fillMissingDefinitions);
+    $('#stopFill').addEventListener('click', ()=>{ _fillAbort = true; toast('Stopping...'); });
+    $('#fillPOSBtn').addEventListener('click', fillMissingPOS);
+    $('#stopPOSFill').addEventListener('click', ()=>{ _fillAbort = true; toast('Stopping...'); });
+
+    // Quiz Mode Functionality
+    let quizData = {
+      questions: [],
+      currentIndex: 0,
+      score: 0,
+      answers: [],
+      type: 'synonyms',
+      timeLeft: 10,
+      timer: null,
+      mistakes: []
+    };
+
+    $('#startQuizBtn').addEventListener('click', startQuiz);
+    $('#newQuizBtn').addEventListener('click', () => {
+      $('#quizResults').style.display = 'none';
+      $('#quizSetup').style.display = 'block';
+    });
+    $('#reviewAnswers').addEventListener('click', () => {
+      const reviewDiv = $('#answerReview');
+      reviewDiv.style.display = reviewDiv.style.display === 'none' ? 'block' : 'none';
+    });
+    $('#quitQuizBtn').addEventListener('click', quitQuiz);
+    
+    // Quiz type changes now only affect quiz generation, not question count
+    $('#quizType').addEventListener('change', () => {
+      // Quiz question count is now determined by selected groups
+    });
+    
+    function quitQuiz() {
+      if (confirm('Are you sure you want to quit the quiz? Your progress will be lost.')) {
+        // Clear any running timer
+        if (quizData.timer) {
+          clearInterval(quizData.timer);
+          quizData.timer = null;
+        }
+        
+        // Reset quiz data
+        quizData = {
+          questions: [],
+          currentIndex: 0,
+          score: 0,
+          answers: [],
+          type: 'synonyms',
+          timeLeft: 10,
+          timer: null,
+          mistakes: []
+        };
+        
+        // Return to quiz setup
+        $('#quizGame').style.display = 'none';
+        $('#quizSetup').style.display = 'block';
+        toast('Quiz cancelled');
+      }
+    }
+    
+    // Quiz option button event listeners
+    for (let i = 0; i < 4; i++) {
+      $(`#option${i}`).addEventListener('click', () => selectAnswer(i));
+    }
+
+    // Get selected quiz types from checkboxes
+    function getSelectedQuizTypes() {
+      const allTypeCheckbox = $('#quizTypeAll');
+      const individualCheckboxes = $$('.quiz-type-option');
+      
+      if (allTypeCheckbox.checked) {
+        return ['definitions', 'synonyms', 'antonyms'];
+      }
+      
+      const selected = [];
+      individualCheckboxes.forEach(cb => {
+        if (cb.checked) selected.push(cb.value);
+      });
+      
+      // Default to definitions if nothing selected
+      if (selected.length === 0) {
+        return ['definitions'];
+      }
+      
+      return selected;
+    }
+
+    function startQuiz() {
+      console.log('*** STARTING QUIZ ***');
+      console.log('Current viewMode:', viewMode);
+      console.log('Current mistake session:', currentMistakeSession);
+      console.log('Session data available:', Object.keys(mistakeSessionData));
+      console.trace('Quiz started from:');
+      
+      // Get selected quiz types
+      const selectedTypes = getSelectedQuizTypes();
+      const wordSelectionMode = $('#wordSelectionMode').value || 'all';
+      
+      // Get selected groups for quiz
+      const selectedGroupIds = new Set();
+      const quizGroupCheckboxes = $$('#quizGroupCheckboxes input[type="checkbox"]:checked');
+      quizGroupCheckboxes.forEach(cb => {
+        selectedGroupIds.add(cb.dataset.groupId);
+      });
+      
+      // If no groups selected, use active groups or all groups
+      const groupsToUse = selectedGroupIds.size > 0 ? selectedGroupIds : (activeGroups.size > 0 ? activeGroups : new Set(wordGroups.map(g => g.id)));
+      
+      // Calculate question count based on selected groups (each group has ~200 words)
+      let count = Math.min(groupsToUse.size * 200, 2000); // Cap at 2000 questions max
+      
+      console.log('🎯 QUIZ DEBUG: Selected quiz types:', selectedTypes);
+      console.log('🎯 QUIZ DEBUG: Selected groups:', groupsToUse.size);
+      console.log('🎯 QUIZ DEBUG: Calculated question count:', count);
+      
+      // Get all cards that have data for at least one of the selected quiz types
+      let allAvailableCards = cards.filter(c => {
+        return selectedTypes.some(type => {
+          if (type === 'definitions') {
+            return c.definition && c.definition.trim();
+          } else {
+            const field = type === 'synonyms' ? 'synonyms' : 'antonyms';
+            return c[field] && c[field].trim() && 
+                   c[field].split(',').filter(w => w.trim()).length > 0;
+          }
+        });
+      });
+      
+      console.log('🎯 QUIZ DEBUG: Available cards for selected type:', allAvailableCards.length);
+      
+      if (allAvailableCards.length < 1) {
+        console.log('❌ NO CARDS: Selected quiz types have no available cards');
+        
+        // Check availability for each type
+        const definitionCards = cards.filter(c => c.definition && c.definition.trim());
+        const synonymCards = cards.filter(c => c.synonyms && c.synonyms.trim() && c.synonyms.split(',').filter(w => w.trim()).length > 0);
+        const antonymCards = cards.filter(c => c.antonyms && c.antonyms.trim() && c.antonyms.split(',').filter(w => w.trim()).length > 0);
+        
+        console.log('📊 AVAILABLE: Definitions:', definitionCards.length, 'Synonyms:', synonymCards.length, 'Antonyms:', antonymCards.length);
+        
+        let suggestions = [];
+        if (definitionCards.length >= 1) suggestions.push(`Definitions (${definitionCards.length} cards)`);
+        if (synonymCards.length >= 1) suggestions.push(`Synonyms (${synonymCards.length} cards)`);
+        if (antonymCards.length >= 1) suggestions.push(`Antonyms (${antonymCards.length} cards)`);
+        
+        let message = `No cards available for the selected quiz types: ${selectedTypes.join(', ')}.`;
+        
+        if (suggestions.length > 0) {
+          message += `\n\nAvailable quiz types:\n• ${suggestions.join('\n• ')}`;
+          message += `\n\nTip: Select quiz types that have available cards.`;
+        } else {
+          message += `\n\nTo create quizzes, add vocabulary cards with definitions, synonyms, or antonyms in the Manage tab.`;
+        }
+        
+        alert(message);
+        return;
+      }
+      
+      // Filter cards based on current view mode first
+      let priorityCards = [];
+      const now = Date.now();
+      const oneDayAgo = now - (24 * 60 * 60 * 1000);
+      
+      if (viewMode === 'saved') {
+        priorityCards = allAvailableCards.filter(c => c.saved);
+      } else if (viewMode === 'mistakes') {
+        if (currentMistakeSession === 'all') {
+          // Get all cards that have ever been in any mistake session (not just currently marked as mistakes)
+          priorityCards = allAvailableCards.filter(c => c.mistake_sessions && c.mistake_sessions.length > 0);
+          console.log(`*** QUIZ MODE: All mistake sessions - ${priorityCards.length} cards found (all cards that have been in any session) ***`);
+        } else {
+          priorityCards = allAvailableCards.filter(c => c.mistake_sessions && c.mistake_sessions.includes(currentMistakeSession));
+          console.log(`*** QUIZ MODE: Session ${currentMistakeSession} - ${priorityCards.length} cards found ***`);
+          console.log('Quiz cards from session:', priorityCards.map(c => `${c.word} (sessions: ${c.mistake_sessions})`));
+        }
+      } else if (viewMode === 'due') {
+        priorityCards = allAvailableCards.filter(c => (c.due || 0) <= now);
+      } else if (viewMode === 'leeches') {
+        priorityCards = allAvailableCards.filter(c => c.is_leech || (c.wrong_count >= 8 && c.interval < 4));
+      } else if (viewMode === 'overdue') {
+        priorityCards = allAvailableCards.filter(c => (c.due || 0) < oneDayAgo);
+      } else if (viewMode === 'slow') {
+        priorityCards = allAvailableCards.filter(c => c.slow_correct);
+      } else if (viewMode === 'new') {
+        priorityCards = allAvailableCards.filter(c => !c.seen || c.reps === 0);
+      } else if (viewMode === 'mature') {
+        priorityCards = allAvailableCards.filter(c => c.interval >= 21 && c.reps >= 3);
+      }
+      
+      // For mistake sessions, adjust count to match available mistake cards
+      if (viewMode === 'mistakes' && priorityCards.length > 0) {
+        count = Math.min(count, priorityCards.length);
+        console.log(`*** QUIZ COUNT ADJUSTED: For mistake session, using ${count} questions (${priorityCards.length} available mistake cards) ***`);
+      }
+      
+      // If we have priority cards from the current view, use them first
+      let availableCards = [];
+      if (priorityCards.length > 0) {
+        availableCards = [...priorityCards];
+        
+        // For mistake sessions, ONLY use the mistake cards (don't supplement with random cards)
+        if (viewMode === 'mistakes') {
+          console.log(`*** QUIZ CARDS: Using ONLY mistake cards (${availableCards.length} cards) ***`);
+        }
+        // For other modes, if we need more cards to reach the requested count, add from remaining cards
+        else if (availableCards.length < count) {
+          const remainingCards = allAvailableCards.filter(c => 
+            !priorityCards.some(pc => pc.id === c.id)
+          );
+          
+          // Shuffle and add remaining cards to fill the gap
+          const shuffledRemaining = remainingCards.sort(() => Math.random() - 0.5);
+          const neededCount = count - availableCards.length;
+          availableCards = [...availableCards, ...shuffledRemaining.slice(0, neededCount)];
+        }
+      } else {
+        // If no priority cards, use all available cards
+        availableCards = allAvailableCards;
+      }
+      
+      if (availableCards.length < 1) {
+        const requirement = type === 'definitions' ? 'definitions' : type;
+        alert(`No cards available with ${requirement} data for quiz. Current: ${availableCards.length}`);
+        return;
+      }
+      
+      // Generate quiz questions
+      console.log('🎯 QUIZ DEBUG: About to generate questions with types:', selectedTypes);
+      console.log('🎯 QUIZ DEBUG: Available cards:', availableCards.length);
+      
+      quizData = {
+        questions: generateMixedQuizQuestions(availableCards, selectedTypes, count),
+        currentIndex: 0,
+        score: 0,
+        answers: [],
+        types: selectedTypes, // Store all selected types
+        timeLeft: 10,
+        timer: null,
+        mistakes: []
+      };
+      
+      console.log('🎯 QUIZ DEBUG: Generated questions:', quizData.questions.length);
+      console.log('🎯 QUIZ DEBUG: Quiz data types:', quizData.types);
+      if (quizData.questions.length > 0) {
+        console.log('🎯 QUIZ DEBUG: First question sample:', quizData.questions[0]);
+      }
+      
+      if (quizData.questions.length === 0) {
+        const requirement = selectedTypes.join('/');
+        alert(`Unable to generate enough questions. Make sure your cards have sufficient ${requirement} data.`);
+        return;
+      }
+      
+      // Start quiz UI
+      $('#quizSetup').style.display = 'none';
+      $('#quizGame').style.display = 'block';
+      
+      // Set dynamic title based on selected types
+      let titleText;
+      if (selectedTypes.length === 1) {
+        const type = selectedTypes[0];
+        if (type === 'synonyms') titleText = 'Synonym Quiz';
+        else if (type === 'antonyms') titleText = 'Antonym Quiz'; 
+        else if (type === 'definitions') titleText = 'Definition Quiz';
+      } else if (selectedTypes.length === 3) {
+        titleText = '🎲 Mixed Quiz (All Types)';
+      } else {
+        const typeNames = selectedTypes.map(t => {
+          if (t === 'definitions') return 'Definitions';
+          if (t === 'synonyms') return 'Synonyms';
+          if (t === 'antonyms') return 'Antonyms';
+          return t;
+        });
+        titleText = `🎲 Mixed Quiz (${typeNames.join(' & ')})`;
+      }
+      $('#quizTitle').textContent = titleText;
+      
+      showQuestion();
+    }
+
+    // Generate questions for multiple quiz types mixed together
+    function generateMixedQuizQuestions(availableCards, types, maxCount) {
+      console.log('🎲 MIXED QUIZ: Generating questions for types:', types);
+      console.log('🎲 MIXED QUIZ: Available cards:', availableCards.length, 'Max questions:', maxCount);
+      
+      const allQuestions = [];
+      const questionsPerType = Math.ceil(maxCount / types.length);
+      
+      // Generate questions for each type
+      types.forEach(type => {
+        console.log(`🎲 MIXED QUIZ: Generating ${questionsPerType} questions for type: ${type}`);
+        
+        // Filter cards that have data for this specific type
+        let typeCards = availableCards.filter(c => {
+          if (type === 'definitions') {
+            return c.definition && c.definition.trim();
+          } else {
+            const field = type === 'synonyms' ? 'synonyms' : 'antonyms';
+            return c[field] && c[field].trim() && 
+                   c[field].split(',').filter(w => w.trim()).length > 0;
+          }
+        });
+        
+        console.log(`🎲 MIXED QUIZ: Cards available for ${type}:`, typeCards.length);
+        
+        if (typeCards.length > 0) {
+          const typeQuestions = generateQuizQuestions(typeCards, type, questionsPerType);
+          // Add type indicator to each question
+          typeQuestions.forEach(q => q.questionType = type);
+          allQuestions.push(...typeQuestions);
+          console.log(`🎲 MIXED QUIZ: Generated ${typeQuestions.length} questions for ${type}`);
+        }
+      });
+      
+      // Shuffle all questions together
+      const shuffledQuestions = allQuestions.sort(() => Math.random() - 0.5);
+      
+      // Limit to requested count
+      const finalQuestions = shuffledQuestions.slice(0, maxCount);
+      
+      console.log('🎲 MIXED QUIZ: Final question breakdown:');
+      types.forEach(type => {
+        const count = finalQuestions.filter(q => q.questionType === type).length;
+        console.log(`  ${type}: ${count} questions`);
+      });
+      
+      return finalQuestions;
+    }
+
+    function generateQuizQuestions(availableCards, type, maxCount) {
+      console.log('🔄 GENERATE DEBUG: Function called with type:', type, 'maxCount:', maxCount);
+      console.log('🔄 GENERATE DEBUG: Available cards:', availableCards.length);
+      
+      const questions = [];
+      const shuffledCards = [...availableCards].sort(() => Math.random() - 0.5);
+      
+      if (type === 'definitions') {
+        console.log('🔄 GENERATE DEBUG: Generating DEFINITION questions');
+        // For definitions: show word, user selects correct definition
+        for (let i = 0; i < Math.min(maxCount, shuffledCards.length) && questions.length < maxCount; i++) {
+          const card = shuffledCards[i];
+          
+          // Skip cards without definitions
+          if (!card.definition || !card.definition.trim()) continue;
+          
+          const correctAnswer = card.definition.trim();
+          
+          // Generate smart distractors for definitions
+          const distractors = generateSmartDefinitionDistractors(card, availableCards, correctAnswer);
+          
+          // Allow questions even with fewer distractors
+          if (distractors.length >= 1) {
+            // Use available distractors, even if less than 3
+            const options = [correctAnswer, ...distractors].sort(() => Math.random() - 0.5);
+            questions.push({
+              word: card.word,
+              correctAnswer: correctAnswer,
+              options: options,
+              correctIndex: options.indexOf(correctAnswer)
+            });
+          } else if (availableCards.length === 1) {
+            // Special case: only 1 card total - create a simple question with just the correct answer
+            questions.push({
+              word: card.word,
+              correctAnswer: correctAnswer,
+              options: [correctAnswer],
+              correctIndex: 0
+            });
+          }
+        }
+      } else {
+        console.log('🔄 GENERATE DEBUG: Generating SYNONYM/ANTONYM questions for type:', type);
+        // For synonyms and antonyms: show word, user selects correct synonym/antonym
+        const field = type === 'synonyms' ? 'synonyms' : 'antonyms';
+        console.log('🔄 GENERATE DEBUG: Using field:', field);
+        
+        for (let i = 0; i < Math.min(maxCount, shuffledCards.length) && questions.length < maxCount; i++) {
+          const card = shuffledCards[i];
+          const correctAnswers = card[field] ? card[field].split(',').map(w => w.trim()).filter(w => w) : [];
+          
+          if (correctAnswers.length === 0) continue;
+          
+          const correctAnswer = correctAnswers[Math.floor(Math.random() * correctAnswers.length)];
+          
+          // Generate smart distractors for synonyms/antonyms
+          const distractors = generateSmartWordDistractors(card, availableCards, correctAnswer, type);
+          
+          // Allow questions even with fewer distractors for synonyms/antonyms
+          if (distractors.length >= 1) {
+            // Use available distractors, even if less than 3
+            const options = [correctAnswer, ...distractors].sort(() => Math.random() - 0.5);
+            questions.push({
+              word: card.word,
+              correctAnswer: correctAnswer,
+              options: options,
+              correctIndex: options.indexOf(correctAnswer)
+            });
+          } else if (availableCards.length === 1) {
+            // Special case: only 1 card total - create a simple question with just the correct answer
+            questions.push({
+              word: card.word,
+              correctAnswer: correctAnswer,
+              options: [correctAnswer],
+              correctIndex: 0
+            });
+          }
+        }
+      }
+      
+      return questions;
+    }
+
+    // Enhanced definition distractor generation with semantic awareness
+    function generateSmartDefinitionDistractors(targetCard, allCards, correctAnswer) {
+      const distractors = [];
+      const otherCards = allCards.filter(c => c.id !== targetCard.id && c.definition && c.definition.trim());
+      
+      console.log(`🎯 DEFINITION QUIZ: Generating distractors for "${targetCard.word}" (${targetCard.pos})`);
+      console.log(`🎯 Available other cards: ${otherCards.length}`);
+      
+      // Analyze the target definition for better matching
+      const targetAnalysis = analyzeDefinition(correctAnswer, targetCard);
+      
+      // Priority 1: Same part of speech with semantic similarity scoring
+      if (targetCard.pos) {
+        const samePOSCards = otherCards.filter(c => c.pos && c.pos.toLowerCase() === targetCard.pos.toLowerCase());
+        console.log(`🎯 Same POS cards (${targetCard.pos}): ${samePOSCards.length}`);
+        
+        // Score and sort by semantic appropriateness
+        const scoredCards = samePOSCards.map(card => ({
+          card,
+          score: calculateDefinitionSimilarityScore(targetAnalysis, card.definition.trim(), card)
+        })).sort((a, b) => b.score - a.score);
+        
+        // Take the best matches, but not the closest (to avoid too obvious)
+        const goodMatches = scoredCards.slice(1, Math.min(6, scoredCards.length)); // Skip best match, take next 5
+        
+        while (distractors.length < 2 && goodMatches.length > 0) {
+          const candidate = goodMatches[Math.floor(Math.random() * goodMatches.length)];
+          const distractor = candidate.card.definition.trim();
+          if (!distractors.includes(distractor) && distractor !== correctAnswer && 
+              isValidDefinitionDistractor(distractor, correctAnswer, targetAnalysis)) {
+            distractors.push(distractor);
+            console.log(`✅ Added same-POS distractor: "${distractor.substring(0, 30)}..." (score: ${candidate.score.toFixed(2)})`);
+          }
+          goodMatches.splice(goodMatches.indexOf(candidate), 1);
+        }
+      }
+      
+      // Priority 2: Related semantic domains (even if different POS)
+      const relatedCards = otherCards.filter(card => {
+        if (targetCard.pos && card.pos && card.pos.toLowerCase() === targetCard.pos.toLowerCase()) {
+          return false; // Already handled above
+        }
+        return calculateSemanticRelatedness(targetCard, card) > 0.3; // Moderate relatedness
+      });
+      
+      console.log(`🎯 Semantically related cards: ${relatedCards.length}`);
+      
+      while (distractors.length < 3 && relatedCards.length > 0) {
+        const randomCard = relatedCards[Math.floor(Math.random() * relatedCards.length)];
+        const distractor = randomCard.definition.trim();
+        if (!distractors.includes(distractor) && distractor !== correctAnswer &&
+            isValidDefinitionDistractor(distractor, correctAnswer, targetAnalysis)) {
+          distractors.push(distractor);
+          console.log(`✅ Added related distractor: "${distractor.substring(0, 30)}..."`);
+        }
+        relatedCards.splice(relatedCards.indexOf(randomCard), 1);
+      }
+      
+      // Priority 3: Similar complexity and length, different domains
+      const complexityCards = otherCards.filter(c => {
+        const defAnalysis = analyzeDefinition(c.definition.trim(), c);
+        return Math.abs(defAnalysis.complexity - targetAnalysis.complexity) <= 1 && // Similar complexity
+               Math.abs(c.definition.trim().length - correctAnswer.length) <= correctAnswer.length * 0.4; // Similar length
+      });
+      
+      console.log(`🎯 Similar complexity cards: ${complexityCards.length}`);
+      
+      while (distractors.length < 3 && complexityCards.length > 0) {
+        const randomCard = complexityCards[Math.floor(Math.random() * complexityCards.length)];
+        const distractor = randomCard.definition.trim();
+        if (!distractors.includes(distractor) && distractor !== correctAnswer &&
+            isValidDefinitionDistractor(distractor, correctAnswer, targetAnalysis)) {
+          distractors.push(distractor);
+          console.log(`✅ Added complexity-matched distractor: "${distractor.substring(0, 30)}..."`);
+        }
+        complexityCards.splice(complexityCards.indexOf(randomCard), 1);
+      }
+      
+      // Priority 4: Fallback with quality filtering
+      const fallbackCards = otherCards.filter(c => 
+        c.definition.trim().length >= 15 && // Minimum meaningful length
+        c.definition.trim().length <= correctAnswer.length * 2 && // Not too long
+        !isDuplicateOrTooSimilar(c.definition.trim(), correctAnswer, distractors)
+      );
+      
+      while (distractors.length < 3 && fallbackCards.length > 0) {
+        const randomCard = fallbackCards[Math.floor(Math.random() * fallbackCards.length)];
+        const distractor = randomCard.definition.trim();
+        if (!distractors.includes(distractor) && distractor !== correctAnswer) {
+          distractors.push(distractor);
+          console.log(`✅ Added fallback distractor: "${distractor.substring(0, 30)}..."`);
+        }
+        fallbackCards.splice(fallbackCards.indexOf(randomCard), 1);
+      }
+      
+      console.log(`🎯 Final distractors count: ${distractors.length}`);
+      return distractors;
+    }
+
+    // Smart distractor generation for synonyms/antonyms
+    function generateSmartWordDistractors(targetCard, allCards, correctAnswer, quizType) {
+      const distractors = [];
+      const field = quizType === 'synonyms' ? 'synonyms' : 'antonyms';
+      const otherCards = allCards.filter(c => c.id !== targetCard.id);
+      
+      // Priority 1: Same part of speech words from the same field (synonyms/antonyms)
+      if (targetCard.pos) {
+        const samePOSCards = otherCards.filter(c => 
+          c.pos && c.pos.toLowerCase() === targetCard.pos.toLowerCase() && 
+          c[field] && c[field].trim()
+        );
+        
+        while (distractors.length < 2 && samePOSCards.length > 0) {
+          const randomCard = samePOSCards[Math.floor(Math.random() * samePOSCards.length)];
+          const words = randomCard[field].split(',').map(w => w.trim()).filter(w => w);
+          if (words.length > 0) {
+            const distractor = words[Math.floor(Math.random() * words.length)];
+            if (!distractors.includes(distractor) && distractor !== correctAnswer && 
+                distractor.toLowerCase() !== targetCard.word.toLowerCase()) {
+              distractors.push(distractor);
+            }
+          }
+          samePOSCards.splice(samePOSCards.indexOf(randomCard), 1);
+        }
+      }
+      
+      // Priority 2: Related semantic field - get words that might be confused
+      // For synonym quiz, avoid antonyms of the target word as distractors
+      // For antonym quiz, avoid synonyms of the target word as distractors
+      const semanticCards = otherCards.filter(c => c[field] && c[field].trim());
+      while (distractors.length < 3 && semanticCards.length > 0) {
+        const randomCard = semanticCards[Math.floor(Math.random() * semanticCards.length)];
+        const words = randomCard[field].split(',').map(w => w.trim()).filter(w => w);
+        if (words.length > 0) {
+          const distractor = words[Math.floor(Math.random() * words.length)];
+          
+          // Quality checks for better distractors
+          const isValidDistractor = !distractors.includes(distractor) && 
+                                   distractor !== correctAnswer &&
+                                   distractor.toLowerCase() !== targetCard.word.toLowerCase() &&
+                                   !isDirectlyRelated(distractor, targetCard, quizType);
+          
+          if (isValidDistractor) {
+            distractors.push(distractor);
+          }
+        }
+        semanticCards.splice(semanticCards.indexOf(randomCard), 1);
+      }
+      
+      // Priority 3: If still need more, carefully use opposite field but avoid direct opposites
+      if (distractors.length < 3) {
+        const oppositeField = quizType === 'synonyms' ? 'antonyms' : 'synonyms';
+        const oppositeCards = otherCards.filter(c => c[oppositeField] && c[oppositeField].trim());
+        
+        while (distractors.length < 3 && oppositeCards.length > 0) {
+          const randomCard = oppositeCards[Math.floor(Math.random() * oppositeCards.length)];
+          const words = randomCard[oppositeField].split(',').map(w => w.trim()).filter(w => w);
+          if (words.length > 0) {
+            const distractor = words[Math.floor(Math.random() * words.length)];
+            if (!distractors.includes(distractor) && distractor !== correctAnswer &&
+                distractor.toLowerCase() !== targetCard.word.toLowerCase() &&
+                !isDirectlyRelated(distractor, targetCard, quizType === 'synonyms' ? 'antonyms' : 'synonyms')) {
+              distractors.push(distractor);
+            }
+          }
+          oppositeCards.splice(oppositeCards.indexOf(randomCard), 1);
+        }
+      }
+      
+      return distractors;
+    }
+
+    // Helper function to check if a word is directly related to target card (avoid obvious wrong answers)
+    function isDirectlyRelated(word, targetCard, relationshipType) {
+      const targetSynonyms = targetCard.synonyms ? targetCard.synonyms.split(',').map(w => w.trim().toLowerCase()) : [];
+      const targetAntonyms = targetCard.antonyms ? targetCard.antonyms.split(',').map(w => w.trim().toLowerCase()) : [];
+      const wordLower = word.toLowerCase();
+      
+      // Don't use direct synonyms/antonyms of the target word as distractors
+      if (relationshipType === 'synonyms' && targetAntonyms.includes(wordLower)) return true;
+      if (relationshipType === 'antonyms' && targetSynonyms.includes(wordLower)) return true;
+      
+      return false;
+    }
+
+    // Definition Analysis and Semantic Matching Functions for Enhanced Quiz Quality
+
+    // Analyze definition structure and content for better matching
+    function analyzeDefinition(definition, card) {
+      const def = definition.toLowerCase();
+      const words = def.split(/\s+/).filter(w => w.length > 2);
+      
+      return {
+        length: definition.length,
+        wordCount: words.length,
+        complexity: calculateDefinitionComplexity(definition),
+        startsWithArticle: /^(a|an|the)\s/i.test(definition),
+        hasExamples: def.includes('such as') || def.includes('like') || def.includes('example'),
+        isNegative: def.includes('not') || def.includes('without') || def.includes('lack'),
+        domain: inferSemanticDomain(def, card),
+        structure: getDefinitionStructure(def)
+      };
+    }
+
+    // Calculate definition complexity based on vocabulary and structure
+    function calculateDefinitionComplexity(definition) {
+      const def = definition.toLowerCase();
+      let complexity = 0;
+      
+      // Length factor
+      complexity += Math.min(def.length / 20, 3);
+      
+      // Complex words (3+ syllables estimated)
+      const complexWords = def.split(/\s+/).filter(word => 
+        word.length > 6 && /[aeiou].*[aeiou].*[aeiou]/.test(word)
+      );
+      complexity += complexWords.length * 0.5;
+      
+      // Subordinate clauses
+      const subclauses = (def.match(/\bthat\b|\bwhich\b|\bwho\b|\bwhen\b|\bwhere\b/g) || []).length;
+      complexity += subclauses * 0.3;
+      
+      // Technical/formal indicators
+      if (def.includes('characterized by') || def.includes('pertaining to') || 
+          def.includes('consisting of') || def.includes('relating to')) {
+        complexity += 1;
+      }
+      
+      return Math.round(complexity * 10) / 10; // Round to 1 decimal
+    }
+
+    // Infer semantic domain from definition and card context
+    function inferSemanticDomain(definition, card) {
+      const def = definition.toLowerCase();
+      
+      // Emotion/feeling words
+      if (/\b(feel|emotion|mood|happy|sad|angry|excited|calm|anxious)\b/.test(def)) {
+        return 'emotion';
+      }
+      
+      // Physical/appearance
+      if (/\b(look|appear|size|shape|color|physical|body|face|tall|short|big|small)\b/.test(def)) {
+        return 'physical';
+      }
+      
+      // Action/behavior
+      if (/\b(do|act|behave|perform|conduct|execute|action|activity)\b/.test(def) || 
+          (card.pos && card.pos.toLowerCase() === 'verb')) {
+        return 'action';
+      }
+      
+      // Mental/intellectual
+      if (/\b(think|know|understand|learn|study|mind|intelligent|smart|wise|clever)\b/.test(def)) {
+        return 'mental';
+      }
+      
+      // Social/relationship
+      if (/\b(people|person|friend|family|social|relationship|group|together|community)\b/.test(def)) {
+        return 'social';
+      }
+      
+      // Time/temporal
+      if (/\b(time|when|before|after|during|always|never|often|sometimes|moment|period)\b/.test(def)) {
+        return 'temporal';
+      }
+      
+      // Place/location
+      if (/\b(place|where|location|area|region|space|room|building|city|country)\b/.test(def)) {
+        return 'spatial';
+      }
+      
+      // Quality/attribute
+      if (/\b(quality|characteristic|trait|feature|property|attribute)\b/.test(def) ||
+          (card.pos && card.pos.toLowerCase() === 'adjective')) {
+        return 'quality';
+      }
+      
+      return 'general';
+    }
+
+    // Determine definition structure pattern
+    function getDefinitionStructure(definition) {
+      const def = definition.toLowerCase().trim();
+      
+      if (def.startsWith('a person who') || def.startsWith('someone who')) {
+        return 'person_role';
+      }
+      if (def.startsWith('a place where') || def.startsWith('somewhere')) {
+        return 'place_function';
+      }
+      if (def.startsWith('a thing that') || def.startsWith('something that')) {
+        return 'object_function';
+      }
+      if (def.startsWith('the act of') || def.startsWith('the process of')) {
+        return 'action_process';
+      }
+      if (def.startsWith('having') || def.startsWith('characterized by')) {
+        return 'characteristic';
+      }
+      if (def.startsWith('to ') && def.split(' ').length <= 6) {
+        return 'simple_action';
+      }
+      
+      return 'descriptive';
+    }
+
+    // Calculate similarity score between target and candidate definitions
+    function calculateDefinitionSimilarityScore(targetAnalysis, candidateDefinition, candidateCard) {
+      const candidateAnalysis = analyzeDefinition(candidateDefinition, candidateCard);
+      let score = 0;
+      
+      // Domain matching (highest priority for good distractors)
+      if (targetAnalysis.domain === candidateAnalysis.domain) {
+        score += 5;
+      } else if (targetAnalysis.domain !== 'general' && candidateAnalysis.domain !== 'general') {
+        score += 2; // Different but specific domains
+      }
+      
+      // Structure similarity
+      if (targetAnalysis.structure === candidateAnalysis.structure) {
+        score += 3;
+      }
+      
+      // Complexity matching
+      const complexityDiff = Math.abs(targetAnalysis.complexity - candidateAnalysis.complexity);
+      score += Math.max(0, 2 - complexityDiff);
+      
+      // Length similarity (prefer reasonable range)
+      const lengthRatio = Math.min(targetAnalysis.length, candidateAnalysis.length) / 
+                         Math.max(targetAnalysis.length, candidateAnalysis.length);
+      score += lengthRatio * 2;
+      
+      // Bonus for similar grammatical patterns
+      if (targetAnalysis.startsWithArticle === candidateAnalysis.startsWithArticle) {
+        score += 1;
+      }
+      if (targetAnalysis.isNegative === candidateAnalysis.isNegative) {
+        score += 1;
+      }
+      
+      return score;
+    }
+
+    // Calculate semantic relatedness between two cards
+    function calculateSemanticRelatedness(card1, card2) {
+      let relatedness = 0;
+      
+      // Same domain
+      const domain1 = inferSemanticDomain(card1.definition ? card1.definition.toLowerCase() : '', card1);
+      const domain2 = inferSemanticDomain(card2.definition ? card2.definition.toLowerCase() : '', card2);
+      
+      if (domain1 === domain2 && domain1 !== 'general') {
+        relatedness += 0.5;
+      }
+      
+      // Shared words in definitions
+      if (card1.definition && card2.definition) {
+        const words1 = new Set(card1.definition.toLowerCase().split(/\s+/).filter(w => w.length > 3));
+        const words2 = new Set(card2.definition.toLowerCase().split(/\s+/).filter(w => w.length > 3));
+        const intersection = new Set([...words1].filter(w => words2.has(w)));
+        const union = new Set([...words1, ...words2]);
+        
+        if (union.size > 0) {
+          relatedness += (intersection.size / union.size) * 0.4;
+        }
+      }
+      
+      // Synonym/antonym connections
+      if (card1.synonyms && card2.synonyms) {
+        const syn1 = card1.synonyms.toLowerCase().split(',').map(s => s.trim());
+        const syn2 = card2.synonyms.toLowerCase().split(',').map(s => s.trim());
+        const overlap = syn1.filter(s => syn2.includes(s)).length;
+        relatedness += overlap * 0.2;
+      }
+      
+      return Math.min(relatedness, 1.0);
+    }
+
+    // Validate if a definition makes a good distractor
+    function isValidDefinitionDistractor(candidateDefinition, correctDefinition, targetAnalysis) {
+      // Avoid too similar definitions
+      if (calculateTextSimilarity(candidateDefinition.toLowerCase(), correctDefinition.toLowerCase()) > 0.7) {
+        return false;
+      }
+      
+      // Avoid definitions that are too short or too long compared to correct answer
+      const lengthRatio = candidateDefinition.length / correctDefinition.length;
+      if (lengthRatio < 0.3 || lengthRatio > 3.0) {
+        return false;
+      }
+      
+      // Avoid definitions that start with exactly the same words
+      const correctWords = correctDefinition.toLowerCase().split(' ').slice(0, 3);
+      const candidateWords = candidateDefinition.toLowerCase().split(' ').slice(0, 3);
+      const startSimilarity = correctWords.filter(w => candidateWords.includes(w)).length / correctWords.length;
+      if (startSimilarity > 0.7) {
+        return false;
+      }
+      
+      return true;
+    }
+
+    // Check for duplicate or overly similar definitions
+    function isDuplicateOrTooSimilar(candidate, correct, existing) {
+      // Check against correct answer
+      if (calculateTextSimilarity(candidate.toLowerCase(), correct.toLowerCase()) > 0.8) {
+        return true;
+      }
+      
+      // Check against existing distractors
+      for (const distractor of existing) {
+        if (calculateTextSimilarity(candidate.toLowerCase(), distractor.toLowerCase()) > 0.8) {
+          return true;
+        }
+      }
+      
+      return false;
+    }
+
+    // Simple text similarity calculation
+    function calculateTextSimilarity(text1, text2) {
+      const words1 = new Set(text1.split(/\s+/).filter(w => w.length > 2));
+      const words2 = new Set(text2.split(/\s+/).filter(w => w.length > 2));
+      
+      if (words1.size === 0 && words2.size === 0) return 1;
+      if (words1.size === 0 || words2.size === 0) return 0;
+      
+      const intersection = new Set([...words1].filter(w => words2.has(w)));
+      const union = new Set([...words1, ...words2]);
+      
+      return intersection.size / union.size;
+    }
+
+    function showQuestion() {
+      if (quizData.currentIndex >= quizData.questions.length) {
+        showResults();
+        return;
+      }
+      
+      // Clear any existing timer
+      if (quizData.timer) {
+        clearInterval(quizData.timer);
+        quizData.timer = null;
+      }
+      
+      const question = quizData.questions[quizData.currentIndex];
+      let prompt = 'Select the synonym:';
+      
+      // Use the individual question's type for mixed quizzes
+      const questionType = question.questionType || quizData.types[0] || 'synonyms';
+      if (questionType === 'synonyms') prompt = 'Select the synonym:';
+      else if (questionType === 'antonyms') prompt = 'Select the antonym:';
+      else if (questionType === 'definitions') prompt = 'Select the definition:';
+      
+      $('#quizWord').textContent = question.word;
+      $('#quizPrompt').textContent = prompt;
+      $('#quizProgress').textContent = `Question ${quizData.currentIndex + 1} of ${quizData.questions.length}`;
+      $('#quizScore').textContent = `Score: ${quizData.score}/${quizData.currentIndex}`;
+      
+      // Update option buttons
+      question.options.forEach((option, i) => {
+        const btn = $(`#option${i}`);
+        btn.textContent = option;
+        btn.className = 'btn';
+        btn.disabled = false;
+      });
+      
+      // Reset and start timer + response time tracking
+      quizData.timeLeft = 10;
+      quizData.questionStartTime = Date.now(); // Track when question started
+      $('#quizTimer').textContent = `⏱️ ${quizData.timeLeft}s`;
+      
+      quizData.timer = setInterval(() => {
+        quizData.timeLeft--;
+        $('#quizTimer').textContent = `⏱️ ${quizData.timeLeft}s`;
+        
+        if (quizData.timeLeft <= 0) {
+          // Time's up - automatically advance with wrong answer
+          clearInterval(quizData.timer);
+          quizData.timer = null;
+          
+          // Update card statistics for timeout
+          const card = cards.find(c => c.word === question.word);
+          if (card) {
+            card.rt_ms = 10000; // Max time
+            card.wrong_count = (card.wrong_count || 0) + 1;
+            // Mark as leech if wrong_count >= 8 and interval < 4 days
+            if (card.wrong_count >= 8 && card.interval < 4) {
+              card.is_leech = true;
+            }
+          }
+          
+          // Record as mistake
+          quizData.mistakes.push({
+            word: question.word,
+            reason: 'Time expired'
+          });
+          
+          // Record wrong answer
+          quizData.answers.push({
+            word: question.word,
+            selectedAnswer: 'Time expired',
+            correctAnswer: question.correctAnswer,
+            isCorrect: false
+          });
+          
+          // Show correct answer briefly
+          question.options.forEach((option, i) => {
+            const btn = $(`#option${i}`);
+            btn.disabled = true;
+            if (i === question.correctIndex) {
+              btn.className = 'btn good';
+            }
+          });
+          
+          // Auto advance after brief delay
+          setTimeout(() => {
+            quizData.currentIndex++;
+            showQuestion();
+          }, 1500);
+        }
+      }, 1000);
+    }
+
+    function selectAnswer(selectedIndex) {
+      const question = quizData.questions[quizData.currentIndex];
+      const isCorrect = selectedIndex === question.correctIndex;
+      const responseTime = Date.now() - (quizData.questionStartTime || Date.now());
+      
+      // Clear timer since user answered
+      if (quizData.timer) {
+        clearInterval(quizData.timer);
+        quizData.timer = null;
+      }
+      
+      // Update card statistics in main vocabulary
+      const card = cards.find(c => c.word === question.word);
+      if (card) {
+        card.rt_ms = responseTime;
+        card.slow_correct = isCorrect && responseTime > 4000; // Slow if >4 seconds
+        
+        if (!isCorrect) {
+          card.wrong_count = (card.wrong_count || 0) + 1;
+          // Mark as leech if wrong_count >= 8 and interval < 4 days
+          if (card.wrong_count >= 8 && card.interval < 4) {
+            card.is_leech = true;
+          }
+        } else {
+          // Reset streak on correct answer or increment it
+          card.streak = (card.streak || 0) + 1;
+        }
+      }
+      
+      // Show feedback
+      question.options.forEach((option, i) => {
+        const btn = $(`#option${i}`);
+        btn.disabled = true;
+        if (i === question.correctIndex) {
+          btn.className = 'btn good';
+        } else if (i === selectedIndex && !isCorrect) {
+          btn.className = 'btn bad';
+        }
+      });
+      
+      // Record answer
+      quizData.answers.push({
+        word: question.word,
+        selectedAnswer: question.options[selectedIndex],
+        correctAnswer: question.correctAnswer,
+        isCorrect: isCorrect
+      });
+      
+      if (isCorrect) {
+        quizData.score++;
+      } else {
+        // Record mistake for wrong answers
+        quizData.mistakes.push({
+          word: question.word,
+          reason: 'Wrong answer selected'
+        });
+      }
+      
+      // Auto advance after delay
+      setTimeout(() => {
+        quizData.currentIndex++;
+        showQuestion();
+      }, 1500);
+    }
+
+    function showResults() {
+      // Clear timer when showing results
+      if (quizData.timer) {
+        clearInterval(quizData.timer);
+        quizData.timer = null;
+      }
+      
+      $('#quizGame').style.display = 'none';
+      $('#quizResults').style.display = 'block';
+      
+      const total = quizData.questions.length;
+      const percentage = Math.round((quizData.score / total) * 100);
+      
+      $('#finalScore').textContent = quizData.score;
+      $('#finalTotal').textContent = total;
+      $('#finalPercent').textContent = percentage + '%';
+      
+      // Generate review
+      const reviewList = $('#reviewList');
+      reviewList.innerHTML = '';
+      
+      quizData.answers.forEach((answer, i) => {
+        const reviewItem = document.createElement('div');
+        reviewItem.className = 'card';
+        reviewItem.style.marginBottom = '8px';
+        reviewItem.innerHTML = `
+          <div class="row" style="justify-content:space-between; align-items:center">
+            <div>
+              <strong>${answer.word}</strong> - ${answer.isCorrect ? '✅' : '❌'}
+              <div class="small muted">
+                Your answer: ${answer.selectedAnswer}
+                ${!answer.isCorrect ? `<br>Correct: ${answer.correctAnswer}` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+        reviewList.appendChild(reviewItem);
+        
+        // Mark incorrect answers as mistakes in the vocabulary
+        // And track quiz completion for all answers (correct and incorrect)
+        const card = cards.find(c => c.word === answer.word);
+        if (card) {
+          // Mark card as quiz completed regardless of correct/incorrect
+          // (the goal is to quiz each word at least once)
+          markCardAsQuizCompleted(card.id);
+          
+          if (!answer.isCorrect) {
+            card.mistake = true;
+            
+            // Auto-create numbered session if we're in 'all' mode and this is the first mistake
+            if (currentMistakeSession === 'all') {
+              currentMistakeSession = mistakeSessionCounter.toString();
+              mistakeSessionCounter++;
+              currentSessionStarted = false;
+              console.log(`*** AUTO-CREATED MISTAKE SESSION: ${currentMistakeSession} (was in 'all' mode) ***`);
+            }
+            
+            // Add to current mistake session
+            if (!card.mistake_sessions) {
+              card.mistake_sessions = [];
+            }
+            if (!card.mistake_sessions.includes(currentMistakeSession) && currentMistakeSession !== 'all') {
+              card.mistake_sessions.push(currentMistakeSession);
+            }
+            console.log(`*** MARKING MISTAKE: "${answer.word}" in session ${currentMistakeSession} ***`);
+            console.log('Current viewMode:', viewMode);
+            console.log('Session data available:', Object.keys(mistakeSessionData));
+            console.log('Session started flag:', currentSessionStarted);
+          } else {
+            console.log(`Card not found for word: "${answer.word}"`);
+          }
+        }
+      });
+      
+      // Save session data for all quizzes (not just those with mistakes)
+      if (currentMistakeSession !== 'all') {
+        const mistakeCount = quizData.answers.filter(a => !a.isCorrect).length;
+        
+        mistakeSessionData[currentMistakeSession] = {
+          sessionId: currentMistakeSession,
+          totalQuestions: total,
+          mistakeCount: mistakeCount,
+          correctCount: quizData.score,
+          scorePercent: percentage,
+          date: new Date().toLocaleDateString(),
+          time: new Date().toLocaleTimeString(),
+          timestamp: Date.now(),
+          quizType: quizData.type
+        };
+        saveSessionData();
+        currentSessionStarted = true;
+        
+        console.log(`Saved session ${currentMistakeSession} data:`, mistakeSessionData[currentMistakeSession]);
+        
+        // Stay in the current session to allow repeated practice
+        console.log(`*** STAYING IN CURRENT SESSION FOR REPEATED PRACTICE: ${currentMistakeSession} ***`);
+        console.log('Session data available:', Object.keys(mistakeSessionData));
+      }
+      
+      // Save the updated cards with mistake flags
+      saveCards();
+      
+      toast(`Quiz completed! Score: ${quizData.score}/${total} (${percentage}%)`);
+    }
+
+    // Sample set
+
+    // Init
+    mistakeSessionData = loadSessionData();
+    console.log('Loaded session data on startup:', mistakeSessionData);
+    console.log('Session counter initialized to:', mistakeSessionCounter);
+    console.log('Current mistake session:', currentMistakeSession);
+    
+    // Initialize current session based on existing data
+    if (Object.keys(mistakeSessionData).length > 0 && currentMistakeSession === 'all') {
+      const latestSession = Math.max(...Object.keys(mistakeSessionData).map(id => parseInt(id))).toString();
+      currentMistakeSession = latestSession;
+      console.log('Initialized current session to latest:', currentMistakeSession);
+    }
+    
+    // Group UI rendering and modal functions
+    function showGroupSelectionModal() {
+      // Initialize groups if they don't exist
+      if (wordGroups.length === 0 && cards.length > 0) {
+        wordGroups = createInitialGroups();
+        saveWordGroups();
+        activeGroups = new Set(wordGroups.map(g => g.id));
+      }
+      
+      // Debug: Show group sizes when opening modal
+      console.log('📊 GROUP MODAL: Current group sizes:');
+      wordGroups.forEach((group, index) => {
+        console.log(`   ${group.name}: ${group.cardIds.length} cards ${group.cardIds.length > 200 ? '⚠️ OVERSIZED' : '✅'}`);
+      });
+      
+      renderGroupListInModal();
+      updateActiveGroupCount();
+      $('#groupSelectionModal').style.display = 'flex';
+    }
+    
+    function hideGroupSelectionModal() {
+      $('#groupSelectionModal').style.display = 'none';
+    }
+    
+    function renderGroupListInModal() {
+      const container = $('#groupListContainer');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      if (wordGroups.length === 0) {
+        container.innerHTML = '<div class="muted" style="text-align:center; padding:20px;">No cards available to group</div>';
+        return;
+      }
+      
+      wordGroups.forEach(group => {
+        const isActive = activeGroups.has(group.id);
+        const groupDiv = document.createElement('div');
+        groupDiv.style.cssText = `
+          display: flex; align-items: center; gap: 8px; 
+          padding: 12px; border-radius: 8px; margin: 4px 0; cursor: pointer;
+          background: ${isActive ? 'rgba(34,211,238,0.2)' : 'var(--panel)'};
+          border: 2px solid ${isActive ? 'var(--accent)' : 'var(--muted)'};
+          transition: all 0.2s ease;
+        `;
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = isActive;
+        checkbox.dataset.groupId = group.id;
+        checkbox.style.cssText = 'width: 16px; height: 16px; margin: 0;';
+        
+        const label = document.createElement('div');
+        label.innerHTML = `
+          <div style="font-weight: 600; color: var(--text);">${group.name}</div>
+          <div style="font-size: 12px; color: var(--sub);">${group.cardIds.length} words \u2022 Created: ${new Date(group.created).toLocaleDateString()}</div>
+        `;
+        
+        // Make entire row clickable
+        groupDiv.addEventListener('click', (e) => {
+          if (e.target !== checkbox) {
+            checkbox.checked = !checkbox.checked;
+          }
+          
+          if (checkbox.checked) {
+            activeGroups.add(group.id);
+          } else {
+            activeGroups.delete(group.id);
+          }
+          
+          renderGroupListInModal();
+          updateActiveGroupCount();
+        });
+        
+        checkbox.addEventListener('change', (e) => {
+          e.stopPropagation();
+          if (e.target.checked) {
+            activeGroups.add(group.id);
+          } else {
+            activeGroups.delete(group.id);
+          }
+          renderGroupListInModal();
+          updateActiveGroupCount();
+        });
+        
+        groupDiv.appendChild(checkbox);
+        groupDiv.appendChild(label);
+        container.appendChild(groupDiv);
+      });
+    }
+    
+    function updateActiveGroupCount() {
+      const countEl = $('#activeGroupCount');
+      if (countEl) {
+        countEl.textContent = activeGroups.size;
+      }
+    }
+    
+    function updateGroupStatus() {
+      const statusDiv = $('#groupStatus');
+      const statusText = $('#groupStatusText');
+      
+      if (wordGroups.length === 0) {
+        statusDiv.style.display = 'none';
+        return;
+      }
+      
+      statusDiv.style.display = 'block';
+      
+      if (activeGroups.size === 0) {
+        statusText.textContent = 'No groups selected (showing all cards)';
+      } else if (activeGroups.size === wordGroups.length) {
+        statusText.textContent = `All ${wordGroups.length} groups selected`;
+      } else {
+        const totalCards = Array.from(activeGroups).reduce((sum, groupId) => {
+          const group = wordGroups.find(g => g.id === groupId);
+          return sum + (group ? group.cardIds.length : 0);
+        }, 0);
+        statusText.textContent = `${activeGroups.size} of ${wordGroups.length} groups selected (${totalCards} cards)`;
+      }
+    }
+    
+    function applyGroupSelection() {
+      console.log('🎯 APPLY: Applying group selection');
+      console.log('🎯 Active groups before apply:', Array.from(activeGroups));
+      
+      hideGroupSelectionModal();
+      updateGroupStatus();
+      
+      // Switch to study mode with selected groups
+      viewMode = 'all';
+      updateKPIHighlight('total');
+      
+      console.log('🎯 APPLY: About to build queue');
+      buildQueue();
+      
+      hideResetControls();
+      updateQuizTypeForSession();
+      
+      // Show study tab
+      ['quiz','manage','import','settings'].forEach(n=> $('#tab-'+n).style.display = 'none');
+      $('#tab-study').style.display = 'block';
+      $$('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-tab="study"]').classList.add('active');
+      
+      const cardCount = getCardsFromActiveGroups().length;
+      console.log('🎯 APPLY: Final card count:', cardCount);
+      toast(`Study mode activated with ${cardCount} cards from ${activeGroups.size} groups`);
+    }
+    
+    function renderGroupSelection() {
+      // This function now updates quiz and export group selections
+      const containers = ['quizGroupCheckboxes', 'exportGroupCheckboxes'];
+      
+      containers.forEach(containerId => {
+        const container = $('#' + containerId);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        if (wordGroups.length === 0) {
+          container.innerHTML = '<span class="muted small">No groups available</span>';
+          return;
+        }
+        
+        wordGroups.forEach(group => {
+          const checkbox = document.createElement('label');
+          checkbox.style.cssText = `
+            display: inline-flex; align-items: center; gap: 4px; 
+            padding: 4px 8px; border-radius: 6px; cursor: pointer;
+            background: var(--panel);
+            border: 1px solid var(--muted);
+            color: var(--text);
+            font-size: 12px; margin: 2px;
+          `;
+          
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.dataset.groupId = group.id;
+          input.style.cssText = 'margin: 0; width: 12px; height: 12px;';
+          
+          const label = document.createElement('span');
+          label.textContent = `${group.name} (${group.cardIds.length})`;
+          
+          checkbox.appendChild(input);
+          checkbox.appendChild(label);
+          container.appendChild(checkbox);
+        });
+      });
+    }
+    
+    // Group management event listeners
+    $('#reshuffleGroupsBtn').addEventListener('click', reshuffleGroups);
+    $('#closeGroupModal').addEventListener('click', hideGroupSelectionModal);
+    $('#changeGroupSelection').addEventListener('click', showGroupSelectionModal);
+    $('#applyGroupSelection').addEventListener('click', applyGroupSelection);
+    
+    $('#selectAllGroupsModal').addEventListener('click', () => {
+      activeGroups = new Set(wordGroups.map(g => g.id));
+      renderGroupListInModal();
+      updateActiveGroupCount();
+    });
+    
+    $('#deselectAllGroupsModal').addEventListener('click', () => {
+      activeGroups.clear();
+      renderGroupListInModal();
+      updateActiveGroupCount();
+    });
+    
+    // Quiz group selection event listeners
+    $('#selectAllGroupsQuiz').addEventListener('click', () => {
+      const checkboxes = $$('#quizGroupCheckboxes input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = true);
+    });
+    $('#deselectAllGroupsQuiz').addEventListener('click', () => {
+      const checkboxes = $$('#quizGroupCheckboxes input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = false);
+    });
+    
+    // Export group selection event listeners
+    $('#selectAllGroupsExport').addEventListener('click', () => {
+      const checkboxes = $$('#exportGroupCheckboxes input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = true);
+    });
+    $('#deselectAllGroupsExport').addEventListener('click', () => {
+      const checkboxes = $$('#exportGroupCheckboxes input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = false);
+    });
+    
+    // Setup quiz type selection logic
+    function setupQuizTypeSelection() {
+      const allTypeCheckbox = $('#quizTypeAll');
+      const individualCheckboxes = $$('.quiz-type-option');
+      
+      // Set default selection (definitions only)
+      const definitionsCheckbox = individualCheckboxes.find(cb => cb.value === 'definitions');
+      if (definitionsCheckbox) definitionsCheckbox.checked = true;
+      
+      // Handle "All Types" checkbox
+      allTypeCheckbox.addEventListener('change', (e) => {
+        const isChecked = e.target.checked;
+        individualCheckboxes.forEach(cb => {
+          cb.checked = isChecked;
+          cb.disabled = isChecked; // Disable individual when "All" is selected
+        });
+      });
+      
+      // Handle individual checkboxes
+      individualCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+          // If any individual is unchecked, uncheck "All"
+          const checkedCount = individualCheckboxes.filter(checkbox => checkbox.checked).length;
+          
+          if (checkedCount === 0) {
+            allTypeCheckbox.checked = false;
+          } else if (checkedCount === individualCheckboxes.length) {
+            allTypeCheckbox.checked = true;
+          } else {
+            allTypeCheckbox.checked = false;
+          }
+          
+          // Re-enable individual checkboxes when "All" is not checked
+          if (!allTypeCheckbox.checked) {
+            individualCheckboxes.forEach(checkbox => checkbox.disabled = false);
+          }
+        });
+      });
+    }
+    
+    // Initialize groups and active selection
+    console.log('🚀 INIT: Starting initialization');
+    console.log('🚀 INIT: Cards count:', cards.length);
+    console.log('🚀 INIT: Word groups count:', wordGroups.length);
+    
+    // Initialize quiz completion tracking
+    initializeQuizCompletionTracking();
+    
+    if (cards.length > 0 && wordGroups.length === 0) {
+      console.log('🚀 INIT: Creating initial groups');
+      // Create initial groups if we have cards but no groups
+      wordGroups = createInitialGroups();
+      saveWordGroups();
+    }
+    if (wordGroups.length > 0) {
+      // Fix any oversized groups that might exist
+      fixOversizedGroups();
+      
+      activeGroups = new Set(wordGroups.map(g => g.id)); // Select all groups by default
+      console.log('🚀 INIT: Active groups set:', Array.from(activeGroups));
+    } else {
+      console.log('🚀 INIT: No groups available, activeGroups will be empty');
+    }
+    
+    // Initialize quiz completion tracking for existing cards on app startup
+    initializeQuizCompletionTracking();
+    
+    // Setup quiz type selection logic
+    setupQuizTypeSelection();
+    
+    refreshUI(); buildQueue();
+    // Initialize highlighting on page load
+    updateKPIHighlight('total');
+    // Quiz question count is now determined by selected groups at quiz start time
+  </script>
+</body>
+</html>

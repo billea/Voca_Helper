@@ -1,0 +1,26 @@
+[
+  {
+    "word": "articulate",
+    "definition": "able to express ideas clearly",
+    "example": "She gave an articulate presentation",
+    "synonyms": "eloquent;fluent",
+    "antonyms": "inarticulate;unclear",
+    "pos": "adjective"
+  },
+  {
+    "word": "comprehensive",
+    "definition": "complete and including everything",
+    "example": "The report was comprehensive",
+    "synonyms": "thorough;complete",
+    "antonyms": "partial;incomplete",
+    "pos": "adjective"
+  },
+  {
+    "word": "innovative",
+    "definition": "introducing new ideas",
+    "example": "The company has an innovative approach",
+    "synonyms": "creative;original",
+    "antonyms": "conventional;traditional",
+    "pos": "adjective"
+  }
+]

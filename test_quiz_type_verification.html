@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Type Selection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; margin: 10px 0; padding: 15px; }
+        .result { font-weight: bold; margin: 10px 0; }
+        .success { color: green; }
+        .error { color: red; }
+        button { margin: 5px; padding: 10px; }
+        select, input { margin: 5px; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Quiz Type Selection Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Data Setup</h3>
+        <p>This test creates cards with different data types to verify quiz type selection works correctly.</p>
+        <button onclick="setupTestData()">Setup Test Data</button>
+        <div id="setup-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Quiz Type Selection Test</h3>
+        <p>Select quiz type and click Start Quiz to see what type of questions are generated:</p>
+        
+        <div>
+            <label>Quiz Type:</label>
+            <select id="quizType">
+                <option value="synonyms">Synonyms</option>
+                <option value="antonyms">Antonyms</option>
+                <option value="definitions">Definitions</option>
+            </select>
+        </div>
+        
+        <div>
+            <label>Question Count:</label>
+            <select id="questionCount">
+                <option value="5">5 Questions</option>
+                <option value="10">10 Questions</option>
+            </select>
+        </div>
+        
+        <button onclick="testQuizGeneration()">Start Quiz Test</button>
+        <div id="quiz-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Generated Questions Preview</h3>
+        <div id="questions-preview"></div>
+    </div>
+
+    <script>
+        // Test data
+        let cards = [];
+        
+        function setupTestData() {
+            cards = [
+                {
+                    id: '1',
+                    word: 'happy',
+                    definition: 'feeling joy or pleasure',
+                    example: 'She was happy to see her friend',
+                    synonyms: 'joyful, cheerful, glad',
+                    antonyms: 'sad, unhappy, miserable',
+                    pos: 'adjective'
+                },
+                {
+                    id: '2', 
+                    word: 'big',
+                    definition: 'large in size or extent',
+                    example: 'The big house had many rooms',
+                    synonyms: 'large, huge, enormous',
+                    antonyms: 'small, tiny, little',
+                    pos: 'adjective'
+                },
+                {
+                    id: '3',
+                    word: 'fast',
+                    definition: 'moving at high speed',
+                    example: 'The fast car won the race',
+                    synonyms: 'quick, rapid, swift',
+                    antonyms: 'slow, sluggish',
+                    pos: 'adjective'
+                },
+                {
+                    id: '4',
+                    word: 'bright',
+                    definition: 'giving out much light',
+                    example: 'The bright sun hurt his eyes',
+                    synonyms: 'luminous, brilliant, radiant',
+                    antonyms: 'dark, dim, dull',
+                    pos: 'adjective'
+                }
+            ];
+            
+            document.getElementById('setup-result').innerHTML = 
+                `<div class="result success">✓ Created ${cards.length} test cards with definitions, synonyms, and antonyms</div>`;
+        }
+        
+        function testQuizGeneration() {
+            if (cards.length === 0) {
+                document.getElementById('quiz-result').innerHTML = 
+                    '<div class="result error">❌ Please setup test data first</div>';
+                return;
+            }
+            
+            const selectedType = document.getElementById('quizType').value;
+            const count = parseInt(document.getElementById('questionCount').value);
+            
+            // Simulate the quiz generation logic from the main app
+            const result = simulateStartQuiz(selectedType, count);
+            
+            document.getElementById('quiz-result').innerHTML = result.html;
+            document.getElementById('questions-preview').innerHTML = result.questionsHtml;
+        }
+        
+        function simulateStartQuiz(type, count) {
+            // Get all cards with required field (same logic as main app)
+            let allAvailableCards = [];
+            if (type === 'definitions') {
+                allAvailableCards = cards.filter(c => c.definition && c.definition.trim());
+            } else {
+                const field = type === 'synonyms' ? 'synonyms' : 'antonyms';
+                allAvailableCards = cards.filter(c => 
+                    c[field] && c[field].trim() && 
+                    c[field].split(',').filter(w => w.trim()).length > 0
+                );
+            }
+            
+            let resultHtml = '';
+            let questionsHtml = '';
+            
+            if (allAvailableCards.length < 1) {
+                // Check if other quiz types have any cards (auto-switch logic)
+                const definitionCards = cards.filter(c => c.definition && c.definition.trim());
+                const synonymCards = cards.filter(c => c.synonyms && c.synonyms.trim() && c.synonyms.split(',').filter(w => w.trim()).length > 0);
+                const antonymCards = cards.filter(c => c.antonyms && c.antonyms.trim() && c.antonyms.split(',').filter(w => w.trim()).length > 0);
+                
+                // Use the new fixed logic
+                let autoSwitchType = null;
+                let autoSwitchCards = 0;
+                
+                if (type === 'synonyms' && synonymCards.length === 0) {
+                    if (antonymCards.length >= 1) {
+                        autoSwitchType = 'antonyms';
+                        autoSwitchCards = antonymCards.length;
+                    } else if (definitionCards.length >= 1) {
+                        autoSwitchType = 'definitions';
+                        autoSwitchCards = definitionCards.length;
+                    }
+                } else if (type === 'antonyms' && antonymCards.length === 0) {
+                    if (synonymCards.length >= 1) {
+                        autoSwitchType = 'synonyms';
+                        autoSwitchCards = synonymCards.length;
+                    } else if (definitionCards.length >= 1) {
+                        autoSwitchType = 'definitions';
+                        autoSwitchCards = definitionCards.length;
+                    }
+                } else if (type === 'definitions' && definitionCards.length === 0) {
+                    if (synonymCards.length >= 1) {
+                        autoSwitchType = 'synonyms';
+                        autoSwitchCards = synonymCards.length;
+                    } else if (antonymCards.length >= 1) {
+                        autoSwitchType = 'antonyms';
+                        autoSwitchCards = antonymCards.length;
+                    }
+                }
+                
+                if (autoSwitchType) {
+                    resultHtml = `<div class="result error">⚠️ Auto-switched from ${type} to ${autoSwitchType} (${autoSwitchCards} cards available)</div>`;
+                    return simulateStartQuiz(autoSwitchType, count);
+                } else {
+                    resultHtml = `<div class="result error">❌ No cards available for ${type} quiz</div>`;
+                }
+            } else {
+                const questions = generateTestQuestions(allAvailableCards, type, count);
+                resultHtml = `<div class="result success">✓ Generated ${questions.length} ${type} questions successfully!</div>`;
+                
+                questionsHtml = '<h4>Sample Questions:</h4>';
+                questions.slice(0, 3).forEach((q, i) => {
+                    questionsHtml += `
+                        <div style="border: 1px solid #eee; margin: 10px 0; padding: 10px;">
+                            <strong>Question ${i + 1}: ${q.word}</strong><br>
+                            <em>${getPromptText(type)}</em><br>
+                            Options: ${q.options.join(', ')}<br>
+                            <span style="color: green;">Correct: ${q.correctAnswer}</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            return { html: resultHtml, questionsHtml: questionsHtml };
+        }
+        
+        function getPromptText(type) {
+            if (type === 'synonyms') return 'Select the synonym:';
+            else if (type === 'antonyms') return 'Select the antonym:';
+            else if (type === 'definitions') return 'Select the definition:';
+            return 'Select the answer:';
+        }
+        
+        function generateTestQuestions(availableCards, type, maxCount) {
+            const questions = [];
+            const shuffledCards = [...availableCards].sort(() => Math.random() - 0.5);
+            
+            if (type === 'definitions') {
+                // For definitions: show word, user selects correct definition
+                for (let i = 0; i < Math.min(maxCount, shuffledCards.length); i++) {
+                    const card = shuffledCards[i];
+                    if (!card.definition || !card.definition.trim()) continue;
+                    
+                    const correctAnswer = card.definition.trim();
+                    const distractors = [];
+                    const otherCards = availableCards.filter(c => c.id !== card.id && c.definition && c.definition.trim());
+                    
+                    while (distractors.length < 3 && otherCards.length > 0) {
+                        const randomCard = otherCards[Math.floor(Math.random() * otherCards.length)];
+                        const distractor = randomCard.definition.trim();
+                        if (!distractors.includes(distractor) && distractor !== correctAnswer) {
+                            distractors.push(distractor);
+                        }
+                        otherCards.splice(otherCards.indexOf(randomCard), 1);
+                    }
+                    
+                    const options = [correctAnswer, ...distractors].sort(() => Math.random() - 0.5);
+                    questions.push({
+                        word: card.word,
+                        correctAnswer: correctAnswer,
+                        options: options,
+                        correctIndex: options.indexOf(correctAnswer)
+                    });
+                }
+            } else {
+                // For synonyms and antonyms: show word, user selects correct synonym/antonym
+                const field = type === 'synonyms' ? 'synonyms' : 'antonyms';
+                
+                for (let i = 0; i < Math.min(maxCount, shuffledCards.length); i++) {
+                    const card = shuffledCards[i];
+                    const correctAnswers = card[field].split(',').map(w => w.trim()).filter(w => w);
+                    
+                    if (correctAnswers.length === 0) continue;
+                    
+                    const correctAnswer = correctAnswers[Math.floor(Math.random() * correctAnswers.length)];
+                    const distractors = [];
+                    const otherCards = availableCards.filter(c => c.id !== card.id);
+                    
+                    while (distractors.length < 3 && otherCards.length > 0) {
+                        const randomCard = otherCards[Math.floor(Math.random() * otherCards.length)];
+                        const randomField = randomCard[field];
+                        
+                        if (randomField && randomField.trim()) {
+                            const words = randomField.split(',').map(w => w.trim()).filter(w => w);
+                            if (words.length > 0) {
+                                const distractor = words[Math.floor(Math.random() * words.length)];
+                                if (!distractors.includes(distractor) && distractor !== correctAnswer) {
+                                    distractors.push(distractor);
+                                }
+                            }
+                        }
+                        otherCards.splice(otherCards.indexOf(randomCard), 1);
+                    }
+                    
+                    const options = [correctAnswer, ...distractors].sort(() => Math.random() - 0.5);
+                    questions.push({
+                        word: card.word,
+                        correctAnswer: correctAnswer,
+                        options: options,
+                        correctIndex: options.indexOf(correctAnswer)
+                    });
+                }
+            }
+            
+            return questions;
+        }
+    </script>
+</body>
+</html>

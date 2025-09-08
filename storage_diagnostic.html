@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary App Storage Diagnostic</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .card { 
+            background: white; 
+            padding: 20px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .success { background: #d4edda; border-left: 4px solid #28a745; }
+        .danger { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .btn { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn.danger { background: #dc3545; }
+        .btn.danger:hover { background: #c82333; }
+        .btn.success { background: #28a745; }
+        .btn.success:hover { background: #218838; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .progress-green { background: #28a745; }
+        .progress-yellow { background: #ffc107; }
+        .progress-red { background: #dc3545; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; font-weight: 600; }
+        .file-input { margin: 10px 0; }
+        #fileProgress { display: none; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Vocabulary App Storage Diagnostic</h1>
+    
+    <div class="card">
+        <h2>📊 Current Storage Usage</h2>
+        <button class="btn" onclick="checkStorage()">Check Storage Usage</button>
+        <div id="storageResults"></div>
+    </div>
+
+    <div class="card">
+        <h2>💾 Data Management</h2>
+        <button class="btn success" onclick="backupAllData()">📥 Backup All Data</button>
+        <button class="btn" onclick="showDataPreview()">👁️ Preview Data</button>
+        <button class="btn danger" onclick="clearConfirmation()">🗑️ Clear All Data</button>
+        <div id="dataResults"></div>
+    </div>
+
+    <div class="card">
+        <h2>📁 File Processing Tools</h2>
+        <div class="file-input">
+            <label><strong>Split Large CSV/JSON File:</strong></label>
+            <input type="file" id="splitFile" accept=".csv,.json,.txt">
+            <label>Chunk size: <input type="number" id="chunkSize" value="200" min="10" max="1000"></label>
+            <button class="btn" onclick="processSplitFile()">Split File</button>
+        </div>
+        <div id="fileProgress"></div>
+        <div id="splitResults"></div>
+    </div>
+
+    <div class="card">
+        <h2>🔄 Import Recovery</h2>
+        <div class="file-input">
+            <label><strong>Test Import File:</strong></label>
+            <input type="file" id="testFile" accept=".csv,.json,.xlsx,.txt">
+            <button class="btn" onclick="testImportFile()">Test Import</button>
+        </div>
+        <div id="importResults"></div>
+    </div>
+
+    <script>
+        const STORAGE_KEYS = {
+            cards: 'vocab_cards_v1',
+            prefs: 'vocab_prefs_v1',
+            groups: 'vocab_groups_v1',
+            mistakes: 'vocab_mistake_sessions',
+            cycle: 'quiz_cycle_global'
+        };
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function getProgressBarClass(percentage) {
+            if (percentage < 60) return 'progress-green';
+            if (percentage < 85) return 'progress-yellow';
+            return 'progress-red';
+        }
+
+        function checkStorage() {
+            const results = document.getElementById('storageResults');
+            let totalSize = 0;
+            let storageData = {};
+
+            // Check each storage key
+            Object.entries(STORAGE_KEYS).forEach(([name, key]) => {
+                const item = localStorage.getItem(key);
+                const size = item ? new Blob([item]).size : 0;
+                totalSize += size;
+                storageData[name] = { key, size, exists: !!item };
+            });
+
+            // Check total localStorage usage
+            let allStorageSize = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    allStorageSize += new Blob([localStorage.getItem(key)]).size;
+                }
+            }
+
+            // Estimate storage limit (5MB typical)
+            const estimatedLimit = 5 * 1024 * 1024; // 5MB
+            const usagePercentage = (allStorageSize / estimatedLimit) * 100;
+
+            let html = `
+                <h3>Storage Overview</h3>
+                <div class="progress">
+                    <div class="progress-bar ${getProgressBarClass(usagePercentage)}" 
+                         style="width: ${Math.min(usagePercentage, 100)}%"></div>
+                </div>
+                <p><strong>Total Usage:</strong> ${formatBytes(allStorageSize)} / ~${formatBytes(estimatedLimit)} 
+                   (${usagePercentage.toFixed(1)}%)</p>
+                
+                <table>
+                    <thead>
+                        <tr><th>Data Type</th><th>Storage Key</th><th>Size</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            Object.entries(storageData).forEach(([name, data]) => {
+                html += `
+                    <tr>
+                        <td><strong>${name}</strong></td>
+                        <td><code>${data.key}</code></td>
+                        <td>${formatBytes(data.size)}</td>
+                        <td>${data.exists ? '✅ Exists' : '❌ Missing'}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+
+            // Add warnings
+            if (usagePercentage > 85) {
+                html += '<div class="card danger"><strong>⚠️ Storage Nearly Full!</strong> Consider exporting and clearing old data.</div>';
+            } else if (usagePercentage > 60) {
+                html += '<div class="card warning"><strong>⚠️ Storage Getting Full</strong> Monitor usage and backup data regularly.</div>';
+            } else {
+                html += '<div class="card success"><strong>✅ Storage Healthy</strong> Plenty of space available.</div>';
+            }
+
+            results.innerHTML = html;
+        }
+
+        function backupAllData() {
+            const backup = {};
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+
+            Object.entries(STORAGE_KEYS).forEach(([name, key]) => {
+                const item = localStorage.getItem(key);
+                if (item) {
+                    try {
+                        backup[name] = JSON.parse(item);
+                    } catch (e) {
+                        backup[name] = item; // Store as string if not JSON
+                    }
+                }
+            });
+
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `vocab_backup_${timestamp}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+
+            document.getElementById('dataResults').innerHTML = 
+                '<div class="card success">✅ Backup created successfully!</div>';
+        }
+
+        function showDataPreview() {
+            const cards = localStorage.getItem(STORAGE_KEYS.cards);
+            const prefs = localStorage.getItem(STORAGE_KEYS.prefs);
+            
+            let html = '<h3>Data Preview</h3>';
+            
+            if (cards) {
+                try {
+                    const cardsData = JSON.parse(cards);
+                    html += `<p><strong>Vocabulary Cards:</strong> ${cardsData.length} cards</p>`;
+                    if (cardsData.length > 0) {
+                        html += '<p><strong>Sample cards:</strong></p><pre>' + 
+                                JSON.stringify(cardsData.slice(0, 3), null, 2) + '</pre>';
+                    }
+                } catch (e) {
+                    html += '<p class="danger">⚠️ Cards data corrupted!</p>';
+                }
+            } else {
+                html += '<p>No vocabulary cards found.</p>';
+            }
+
+            if (prefs) {
+                try {
+                    const prefsData = JSON.parse(prefs);
+                    html += '<p><strong>Preferences:</strong></p><pre>' + 
+                            JSON.stringify(prefsData, null, 2) + '</pre>';
+                } catch (e) {
+                    html += '<p class="danger">⚠️ Preferences data corrupted!</p>';
+                }
+            }
+
+            document.getElementById('dataResults').innerHTML = html;
+        }
+
+        function clearConfirmation() {
+            const confirmed = confirm(
+                "⚠️ WARNING: This will delete ALL vocabulary data!\n\n" +
+                "Make sure you have exported a backup first.\n\n" +
+                "Type 'DELETE' to confirm:"
+            );
+            
+            if (confirmed) {
+                const doubleConfirm = prompt("Type 'DELETE' to permanently remove all data:");
+                if (doubleConfirm === 'DELETE') {
+                    clearAllData();
+                }
+            }
+        }
+
+        function clearAllData() {
+            Object.values(STORAGE_KEYS).forEach(key => {
+                localStorage.removeItem(key);
+            });
+            
+            document.getElementById('dataResults').innerHTML = 
+                '<div class="card success">✅ All vocabulary data cleared. Refresh the main app to start fresh.</div>';
+            
+            // Recheck storage
+            checkStorage();
+        }
+
+        function processSplitFile() {
+            const fileInput = document.getElementById('splitFile');
+            const chunkSize = parseInt(document.getElementById('chunkSize').value);
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file to split.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let data = [];
+                    const filename = file.name.toLowerCase();
+                    
+                    if (filename.endsWith('.json')) {
+                        data = JSON.parse(e.target.result);
+                    } else if (filename.endsWith('.csv') || filename.endsWith('.txt')) {
+                        data = parseCSV(e.target.result);
+                    } else {
+                        alert('Unsupported file type. Please use JSON or CSV files.');
+                        return;
+                    }
+
+                    if (!Array.isArray(data)) {
+                        alert('File must contain an array of vocabulary items.');
+                        return;
+                    }
+
+                    // Split into chunks
+                    const chunks = [];
+                    for (let i = 0; i < data.length; i += chunkSize) {
+                        chunks.push(data.slice(i, i + chunkSize));
+                    }
+
+                    // Create download links for each chunk
+                    let html = `<h3>File Split Results</h3>`;
+                    html += `<p>Original: ${data.length} items → ${chunks.length} chunks of max ${chunkSize} items each</p>`;
+                    
+                    chunks.forEach((chunk, index) => {
+                        const blob = new Blob([JSON.stringify(chunk, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        html += `
+                            <div style="margin: 10px 0;">
+                                <a href="${url}" download="vocab_chunk_${index + 1}_of_${chunks.length}.json" 
+                                   class="btn success">📥 Download Chunk ${index + 1} (${chunk.length} items)</a>
+                            </div>
+                        `;
+                    });
+
+                    document.getElementById('splitResults').innerHTML = html;
+                } catch (error) {
+                    document.getElementById('splitResults').innerHTML = 
+                        `<div class="card danger">❌ Error processing file: ${error.message}</div>`;
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        function testImportFile() {
+            const fileInput = document.getElementById('testFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file to test.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let data = [];
+                    let fileType = '';
+                    const filename = file.name.toLowerCase();
+                    const fileSize = formatBytes(file.size);
+                    
+                    if (filename.endsWith('.json')) {
+                        data = JSON.parse(e.target.result);
+                        fileType = 'JSON';
+                    } else if (filename.endsWith('.csv') || filename.endsWith('.txt')) {
+                        data = parseCSV(e.target.result);
+                        fileType = 'CSV';
+                    } else {
+                        throw new Error('Unsupported file type');
+                    }
+
+                    let html = `<h3>Import Test Results</h3>`;
+                    html += `<p><strong>File:</strong> ${file.name} (${fileSize})</p>`;
+                    html += `<p><strong>Type:</strong> ${fileType}</p>`;
+                    html += `<p><strong>Items Found:</strong> ${data.length}</p>`;
+                    
+                    if (data.length > 0) {
+                        html += '<p><strong>Sample Data:</strong></p>';
+                        html += '<pre>' + JSON.stringify(data.slice(0, 3), null, 2) + '</pre>';
+                        
+                        // Estimate storage impact
+                        const estimatedSize = new Blob([JSON.stringify(data)]).size;
+                        html += `<p><strong>Estimated Storage Impact:</strong> ${formatBytes(estimatedSize)}</p>`;
+                        
+                        if (estimatedSize > 2 * 1024 * 1024) { // > 2MB
+                            html += '<div class="card warning">⚠️ Large file detected. Consider splitting into smaller chunks.</div>';
+                        } else {
+                            html += '<div class="card success">✅ File size looks good for import.</div>';
+                        }
+                    }
+
+                    document.getElementById('importResults').innerHTML = html;
+                } catch (error) {
+                    document.getElementById('importResults').innerHTML = 
+                        `<div class="card danger">❌ Import test failed: ${error.message}</div>`;
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Simple CSV parser (basic implementation)
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = values[index] || '';
+                });
+                data.push(obj);
+            }
+            
+            return data;
+        }
+
+        // Auto-check storage on page load
+        window.addEventListener('load', checkStorage);
+    </script>
+</body>
+</html>

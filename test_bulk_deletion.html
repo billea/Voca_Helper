@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Deletion Test Suite</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .test-container { background: white; padding: 20px; border-radius: 8px; margin: 10px 0; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .pass { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .fail { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        iframe { width: 100%; height: 600px; border: 1px solid #ddd; margin: 10px 0; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        .controls { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Vocabulary App - Bulk Deletion Test Suite</h1>
+    
+    <div class="controls">
+        <button onclick="runTests()">Run All Tests</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>Application Under Test</h2>
+        <iframe id="appFrame" src="http://127.0.0.1:8080/vocabulary_memory_helper_single_file_web_app.html"></iframe>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        function log(message, type = 'info') {
+            testResults.push({message, type, timestamp: new Date().toLocaleTimeString()});
+            updateResults();
+        }
+        
+        function updateResults() {
+            const container = document.getElementById('testResults');
+            container.innerHTML = testResults.map(result => 
+                `<div class="test-result ${result.type}">
+                    [${result.timestamp}] ${result.message}
+                </div>`
+            ).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function clearResults() {
+            testResults = [];
+            updateResults();
+        }
+        
+        async function waitForFrame() {
+            return new Promise(resolve => {
+                const frame = document.getElementById('appFrame');
+                frame.onload = resolve;
+                setTimeout(resolve, 3000); // fallback
+            });
+        }
+        
+        async function getFrameDocument() {
+            const frame = document.getElementById('appFrame');
+            try {
+                return frame.contentDocument || frame.contentWindow.document;
+            } catch (e) {
+                log('Unable to access iframe content due to cross-origin restrictions', 'fail');
+                return null;
+            }
+        }
+        
+        async function testBulkDeletionUI() {
+            log('=== Testing Bulk Deletion UI Components ===', 'info');
+            
+            try {
+                await waitForFrame();
+                const doc = await getFrameDocument();
+                
+                if (!doc) {
+                    log('Cannot access iframe content - testing manually required', 'info');
+                    return;
+                }
+                
+                // Test 1: Check if Select All checkbox exists
+                const selectAllCheckbox = doc.getElementById('selectAll');
+                if (selectAllCheckbox) {
+                    log('✓ Select All checkbox found in table header', 'pass');
+                } else {
+                    log('✗ Select All checkbox not found', 'fail');
+                }
+                
+                // Test 2: Check if bulk delete button exists
+                const bulkDeleteBtn = doc.getElementById('bulkDeleteBtn');
+                if (bulkDeleteBtn) {
+                    log('✓ Bulk delete button found', 'pass');
+                    if (bulkDeleteBtn.style.display === 'none') {
+                        log('✓ Bulk delete button is initially hidden', 'pass');
+                    } else {
+                        log('✗ Bulk delete button should be initially hidden', 'fail');
+                    }
+                } else {
+                    log('✗ Bulk delete button not found', 'fail');
+                }
+                
+                // Test 3: Check table structure
+                const table = doc.getElementById('cardsTable');
+                if (table) {
+                    log('✓ Cards table found', 'pass');
+                    const headers = table.querySelectorAll('thead th');
+                    if (headers.length >= 5) {
+                        log('✓ Table has correct number of columns', 'pass');
+                    } else {
+                        log('✗ Table structure appears incorrect', 'fail');
+                    }
+                } else {
+                    log('✗ Cards table not found', 'fail');
+                }
+                
+            } catch (error) {
+                log(`Error during UI testing: ${error.message}`, 'fail');
+            }
+        }
+        
+        async function testFunctionality() {
+            log('=== Testing Functionality (Manual Steps Required) ===', 'info');
+            
+            log('Please perform these manual tests in the iframe above:', 'info');
+            log('1. Navigate to "Manage" tab', 'info');
+            log('2. Click "Add sample set" button to add test data', 'info');
+            log('3. Check if individual checkboxes appear in first column', 'info');
+            log('4. Test Select All checkbox functionality', 'info');
+            log('5. Test individual checkbox selection', 'info');
+            log('6. Verify bulk delete button appears when cards selected', 'info');
+            log('7. Test bulk deletion with confirmation dialog', 'info');
+            log('8. Check if word count updates correctly', 'info');
+            log('9. Verify existing functionality (add, edit, delete) still works', 'info');
+        }
+        
+        function testChecklist() {
+            log('=== Bulk Deletion Feature Checklist ===', 'info');
+            
+            const checklistItems = [
+                'Checkboxes in first column of word table',
+                'Select All checkbox in header',
+                'Bulk delete button appears when cards selected',
+                'Smart checkbox state management (indeterminate)',
+                'Confirmation dialog for bulk deletions',
+                'Proper cleanup after bulk operations',
+                'Word count updates correctly',
+                'All existing functionality preserved'
+            ];
+            
+            checklistItems.forEach((item, index) => {
+                log(`${index + 1}. ${item} - Manual verification required`, 'info');
+            });
+        }
+        
+        async function runTests() {
+            clearResults();
+            log('Starting Bulk Deletion Test Suite...', 'info');
+            
+            await testBulkDeletionUI();
+            await testFunctionality();
+            testChecklist();
+            
+            log('Test suite completed. Manual verification required for full testing.', 'info');
+        }
+        
+        // Auto-run tests when page loads
+        setTimeout(runTests, 2000);
+    </script>
+</body>
+</html>

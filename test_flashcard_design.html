@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Design Test</title>
+    <style>
+        body { font-family: system-ui; margin: 20px; background: #0f172a; }
+        h2 { color: white; }
+        iframe { 
+            border: none; 
+            width: 100%; 
+            height: 800px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <h2>🧪 Testing New Flashcard Design</h2>
+    <iframe src="vocabulary_memory_helper_single_file_web_app.html"></iframe>
+    
+    <script>
+        // Auto-populate test data after iframe loads
+        setTimeout(() => {
+            const iframe = document.querySelector('iframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            // Add test words
+            if (iframeDoc) {
+                const testWords = [
+                    {
+                        word: "articulate",
+                        definition: "able to express ideas clearly and effectively",
+                        example: "She gave an articulate presentation to the board",
+                        synonyms: "eloquent, fluent, expressive",
+                        antonyms: "inarticulate, unclear, mumbled",
+                        pos: "adjective",
+                        morphology: "Latin articulatus (jointed, distinct)"
+                    },
+                    {
+                        word: "comprehensive",
+                        definition: "complete and including everything that is necessary",
+                        example: "The report provided a comprehensive analysis",
+                        synonyms: "thorough, complete, extensive",
+                        antonyms: "partial, incomplete, limited",
+                        pos: "adjective",
+                        morphology: "Latin comprehendere (to grasp, understand)"
+                    }
+                ];
+                
+                // Simulate adding cards to localStorage
+                const iframe = document.querySelector('iframe');
+                iframe.onload = () => {
+                    setTimeout(() => {
+                        const iframeWindow = iframe.contentWindow;
+                        if (iframeWindow && iframeWindow.localStorage) {
+                            iframeWindow.localStorage.setItem('vocabCards', JSON.stringify(testWords));
+                            iframe.src = iframe.src; // Refresh to load data
+                        }
+                    }, 1000);
+                };
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
