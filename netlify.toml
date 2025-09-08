@@ -3,3 +3,18 @@
   command = ""
 
 # No redirects needed because the entry file is index.html
+
+[[headers]]
+# Never cache the entry HTML to avoid stale deploys
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+[[headers]]
+# Sensible default caching for all other assets
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=600"
