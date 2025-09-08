@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Vocabulary Memory Helper</title>
+  <!-- Supabase JS (CDN) for optional cloud sync -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <style>
     :root{
       --bg:#0f172a; --panel:#111827; --muted:#1f2937; --text:#e5e7eb; --sub:#9ca3af; --accent:#22d3ee; --accent2:#a78bfa; --good:#34d399; --warn:#f59e0b; --bad:#ef4444;
@@ -475,6 +477,43 @@
           </div>
         </div>
         <div class="card">
+          <h3>Cloud Sync (Supabase)</h3>
+          <div class="muted small" style="margin-bottom:8px">Optional: keep your cards in sync across devices. Requires a Supabase project (free tier works). Your data stays private with Row Level Security.</div>
+          <div class="row" style="gap:10px; margin-top:8px">
+            <div style="flex:1">
+              <label>Supabase URL</label>
+              <input id="sbUrl" type="text" placeholder="https://your-project.supabase.co" />
+            </div>
+            <div style="flex:1">
+              <label>Anon Key</label>
+              <input id="sbAnonKey" type="password" placeholder="eyJhbGciOi..." />
+            </div>
+          </div>
+          <div class="row" style="gap:10px; margin-top:8px; align-items:center">
+            <button class="btn" id="sbSaveConfig">Save Config</button>
+            <span class="muted small" id="sbConfigStatus">Not configured</span>
+          </div>
+          <div class="hr"></div>
+          <div class="row" style="gap:10px; margin-top:8px; align-items:end">
+            <div style="flex:1">
+              <label>Email for magic link</label>
+              <input id="sbEmail" type="email" placeholder="you@example.com" />
+            </div>
+            <button class="btn" id="sbSignInMagic">Send Magic Link</button>
+            <button class="btn" id="sbSignInGithub">GitHub Login</button>
+            <button class="btn" id="sbSignOut">Sign Out</button>
+          </div>
+          <div class="row" style="gap:10px; margin-top:8px">
+            <span class="pill" id="sbAuthStatus">Signed out</span>
+          </div>
+          <div class="hr"></div>
+          <div class="row wrap" style="gap:10px; margin-top:8px">
+            <button class="btn good" id="sbSyncDown">⬇ Sync Down (server → local)</button>
+            <button class="btn good" id="sbSyncUp">⬆ Sync Up (local → server)</button>
+            <span class="muted small" id="sbSyncInfo">No sync yet</span>
+          </div>
+        </div>
+        <div class="card">
           <h3>About</h3>
           <p class="muted">This is a single‑file app. Share the <em>.html</em> file and it works offline in any modern browser. All data stays on your device using localStorage.</p>
           <p class="muted small">Spaced repetition uses a simplified SM‑2 algorithm. Ratings: Again(0), Hard(3), Good(4), Easy(5).</p>
@@ -859,7 +898,7 @@
 
     function addCard(obj){
       const c = Object.assign({ id:uid(), word:'', definition:'', example:'', morphology:'', synonyms:'', antonyms:'', pos:'',
-        ef:2.5, interval:0, reps:0, due:Date.now(), created:Date.now(), seen:false, 
+        ef:2.5, interval:0, reps:0, due:Date.now(), created:Date.now(), updated:Date.now(), seen:false, 
         wrong_count:0, rt_ms:0, streak:0, slow_correct:false, is_leech:false, 
         mistake_sessions:[], quiz_completed:false, quiz_cycle:1 }, obj);
       cards.push(c); 
@@ -869,7 +908,7 @@
     }
 
     function updateCard(id, patch){
-      const i = cards.findIndex(c=>c.id===id); if(i>-1){ cards[i] = Object.assign(cards[i], patch); saveCards(); }
+      const i = cards.findIndex(c=>c.id===id); if(i>-1){ cards[i] = Object.assign(cards[i], patch, {updated: Date.now()}); saveCards(); }
     }
 
     function deleteCard(id){ 
@@ -2598,6 +2637,181 @@ Expected JSON format:
         toast('Quiz cancelled');
       }
     }
+
+    // ---------- Supabase sync (optional) ----------
+    let supabaseClient = null;
+
+    function initSupabaseFromPrefs(){
+      const url = (prefs.supabaseUrl||'').trim();
+      const key = (prefs.supabaseAnonKey||'').trim();
+      if(url && key && window.supabase){
+        supabaseClient = window.supabase.createClient(url, key);
+        $('#sbConfigStatus').textContent = 'Configured';
+        $('#sbUrl').value = url; $('#sbAnonKey').value = key;
+        // Restore email if saved
+        if(prefs.supabaseEmail) $('#sbEmail').value = prefs.supabaseEmail;
+        // Session + auth status
+        supabaseClient.auth.getSession().then(({data})=>{
+          updateSbAuthUI(data?.session?.user||null);
+        });
+        supabaseClient.auth.onAuthStateChange((_event, session)=>{
+          updateSbAuthUI(session?.user||null);
+        });
+      } else {
+        $('#sbConfigStatus').textContent = 'Not configured';
+      }
+    }
+
+    function updateSbAuthUI(user){
+      if(user){
+        $('#sbAuthStatus').textContent = `Signed in: ${user.email||user.id}`;
+      } else {
+        $('#sbAuthStatus').textContent = 'Signed out';
+      }
+    }
+
+    function cardToRow(c){
+      return {
+        id: c.id,
+        word: c.word||null,
+        definition: c.definition||null,
+        example: c.example||null,
+        morphology: c.morphology||null,
+        synonyms: c.synonyms||null,
+        antonyms: c.antonyms||null,
+        pos: c.pos||null,
+        ef: c.ef||2.5,
+        interval: c.interval||0,
+        reps: c.reps||0,
+        due: c.due||null,
+        created: c.created||null,
+        updated: c.updated||c.created||Date.now(),
+        seen: !!c.seen,
+        wrong_count: c.wrong_count||0,
+        rt_ms: c.rt_ms||0,
+        streak: c.streak||0,
+        slow_correct: !!c.slow_correct,
+        is_leech: !!c.is_leech,
+        mistake_sessions: c.mistake_sessions||[],
+        quiz_completed: !!c.quiz_completed,
+        quiz_cycle: c.quiz_cycle||1
+      };
+    }
+
+    function rowToCard(r){
+      return {
+        id: r.id,
+        word: r.word||'',
+        definition: r.definition||'',
+        example: r.example||'',
+        morphology: r.morphology||'',
+        synonyms: r.synonyms||'',
+        antonyms: r.antonyms||'',
+        pos: r.pos||'',
+        ef: r.ef||2.5,
+        interval: r.interval||0,
+        reps: r.reps||0,
+        due: r.due||Date.now(),
+        created: r.created||Date.now(),
+        updated: r.updated||Date.now(),
+        seen: !!r.seen,
+        wrong_count: r.wrong_count||0,
+        rt_ms: r.rt_ms||0,
+        streak: r.streak||0,
+        slow_correct: !!r.slow_correct,
+        is_leech: !!r.is_leech,
+        mistake_sessions: r.mistake_sessions||[],
+        quiz_completed: !!r.quiz_completed,
+        quiz_cycle: r.quiz_cycle||1
+      };
+    }
+
+    async function sbSyncUp(){
+      if(!supabaseClient){ toast('Configure Supabase first'); return; }
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if(!user){ toast('Sign in to Supabase to sync'); return; }
+      $('#sbSyncInfo').textContent = 'Syncing up...';
+      const rows = cards.map(cardToRow);
+      const { error } = await supabaseClient.from('vocab_cards').upsert(rows, { onConflict: 'id' });
+      if(error){ console.error(error); toast('Sync up failed'); $('#sbSyncInfo').textContent = 'Sync up failed'; return; }
+      prefs.lastSyncAt = Date.now(); savePrefs();
+      $('#sbSyncInfo').textContent = `Last sync: ${new Date(prefs.lastSyncAt).toLocaleString()}`;
+      toast('Synced to server');
+    }
+
+    async function sbSyncDown(){
+      if(!supabaseClient){ toast('Configure Supabase first'); return; }
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if(!user){ toast('Sign in to Supabase to sync'); return; }
+      $('#sbSyncInfo').textContent = 'Syncing down...';
+      const { data, error } = await supabaseClient.from('vocab_cards').select('*');
+      if(error){ console.error(error); toast('Sync down failed'); $('#sbSyncInfo').textContent = 'Sync down failed'; return; }
+      // Merge by id, prefer newer updated timestamp
+      const byId = new Map(cards.map(c=>[c.id,c]));
+      for(const r of data||[]){
+        const local = byId.get(r.id);
+        if(!local){
+          cards.push(rowToCard(r));
+        } else {
+          const ru = r.updated||0, lu = local.updated||0;
+          if(ru > lu){
+            Object.assign(local, rowToCard(r));
+          }
+        }
+      }
+      saveCards();
+      prefs.lastSyncAt = Date.now(); savePrefs();
+      $('#sbSyncInfo').textContent = `Last sync: ${new Date(prefs.lastSyncAt).toLocaleString()}`;
+      toast('Synced from server');
+    }
+
+    // Wire Supabase settings UI
+    window.addEventListener('load', ()=>{
+      // Buttons
+      const saveBtn = $('#sbSaveConfig');
+      if(saveBtn){
+        saveBtn.addEventListener('click', ()=>{
+          prefs.supabaseUrl = ($('#sbUrl').value||'').trim();
+          prefs.supabaseAnonKey = ($('#sbAnonKey').value||'').trim();
+          prefs.supabaseEmail = ($('#sbEmail').value||'').trim();
+          savePrefs();
+          initSupabaseFromPrefs();
+          toast('Supabase config saved');
+        });
+      }
+      const signMagic = $('#sbSignInMagic');
+      if(signMagic){
+        signMagic.addEventListener('click', async ()=>{
+          if(!supabaseClient){ toast('Configure Supabase first'); return; }
+          const email = ($('#sbEmail').value||'').trim();
+          if(!email){ toast('Enter your email'); return; }
+          const { error } = await supabaseClient.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.origin } });
+          if(error){ console.error(error); toast('Failed to send magic link'); return; }
+          toast('Magic link sent. Check your email.');
+        });
+      }
+      const signGithub = $('#sbSignInGithub');
+      if(signGithub){
+        signGithub.addEventListener('click', async ()=>{
+          if(!supabaseClient){ toast('Configure Supabase first'); return; }
+          await supabaseClient.auth.signInWithOAuth({ provider:'github', options:{ redirectTo: location.origin } });
+        });
+      }
+      const signOutBtn = $('#sbSignOut');
+      if(signOutBtn){
+        signOutBtn.addEventListener('click', async ()=>{
+          if(!supabaseClient){ return; }
+          await supabaseClient.auth.signOut();
+          toast('Signed out');
+        });
+      }
+      const syncUpBtn = $('#sbSyncUp');
+      if(syncUpBtn){ syncUpBtn.addEventListener('click', sbSyncUp); }
+      const syncDownBtn = $('#sbSyncDown');
+      if(syncDownBtn){ syncDownBtn.addEventListener('click', sbSyncDown); }
+      // Initialize on load
+      initSupabaseFromPrefs();
+    });
     
     // Quiz option button event listeners
     for (let i = 0; i < 4; i++) {
