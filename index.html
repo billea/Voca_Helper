@@ -2785,7 +2785,8 @@ Expected JSON format:
           if(!supabaseClient){ toast('Configure Supabase first'); return; }
           const email = ($('#sbEmail').value||'').trim();
           if(!email){ toast('Enter your email'); return; }
-          const { error } = await supabaseClient.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.origin } });
+          // Use Supabase Auth SITE_URL setting; no explicit redirect
+          const { error } = await supabaseClient.auth.signInWithOtp({ email });
           if(error){ console.error(error); toast('Failed to send magic link'); return; }
           toast('Magic link sent. Check your email.');
         });
@@ -2794,7 +2795,8 @@ Expected JSON format:
       if(signGithub){
         signGithub.addEventListener('click', async ()=>{
           if(!supabaseClient){ toast('Configure Supabase first'); return; }
-          await supabaseClient.auth.signInWithOAuth({ provider:'github', options:{ redirectTo: location.origin } });
+          // Use Supabase Auth SITE_URL as the redirect
+          await supabaseClient.auth.signInWithOAuth({ provider:'github' });
         });
       }
       const signOutBtn = $('#sbSignOut');
