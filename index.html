@@ -2857,6 +2857,8 @@ Expected JSON format:
       setupTabClicks();
       initTabFromURL();
     });
+    // React to hash changes like #settings
+    window.addEventListener('hashchange', initTabFromURL);
     
     // Quiz option button event listeners
     for (let i = 0; i < 4; i++) {
