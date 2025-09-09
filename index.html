@@ -80,6 +80,7 @@
       <div class="row wrap">
         <h1>Vocabulary Memory Helper</h1>
         <span class="badge">Offline • Single&nbsp;File</span>
+        <button class="btn ghost" id="openSettingsBtn" title="Open Settings">⚙ Settings</button>
       </div>
     </div>
 
@@ -2813,6 +2814,44 @@ Expected JSON format:
       if(syncDownBtn){ syncDownBtn.addEventListener('click', sbSyncDown); }
       // Initialize on load
       initSupabaseFromPrefs();
+    });
+
+    // ---------- Tabs: deep-link + UI handling ----------
+    const ALL_TABS = ['study','quiz','manage','import','settings'];
+
+    function showTab(tab){
+      ALL_TABS.forEach(n=>{
+        const sec = $('#tab-'+n);
+        if(sec) sec.style.display = (n===tab ? 'block' : 'none');
+      });
+      $$('.tab').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+      try{
+        const url = new URL(location.href);
+        url.searchParams.set('tab', tab);
+        history.replaceState(null, '', url.toString());
+      }catch(e){ /* noop */ }
+    }
+
+    function initTabFromURL(){
+      const params = new URLSearchParams(location.search);
+      let t = (params.get('tab')||'').trim().toLowerCase();
+      if(!t && location.hash){ t = location.hash.replace('#','').toLowerCase(); }
+      if(ALL_TABS.includes(t)){
+        showTab(t);
+      }
+    }
+
+    function setupTabClicks(){
+      $$('.tab').forEach(btn=>{
+        btn.addEventListener('click', ()=> showTab(btn.dataset.tab));
+      });
+      const settingsBtn = $('#openSettingsBtn');
+      if(settingsBtn){ settingsBtn.addEventListener('click', ()=> showTab('settings')); }
+    }
+
+    window.addEventListener('load', ()=>{
+      setupTabClicks();
+      initTabFromURL();
     });
     
     // Quiz option button event listeners
