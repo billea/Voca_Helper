@@ -80,7 +80,7 @@
       <div class="row wrap">
         <h1>Vocabulary Memory Helper</h1>
         <span class="badge">Offline • Single&nbsp;File</span>
-        <a class="btn ghost" id="openSettingsBtn" title="Open Settings" href="?tab=settings">⚙ Settings</a>
+        <a class="btn ghost" id="openSettingsBtn" title="Open Settings" href="#settings">⚙ Settings</a>
       </div>
     </div>
 
@@ -2832,6 +2832,7 @@ Expected JSON format:
         const url = new URL(location.href);
         url.searchParams.set('tab', tab);
         history.replaceState(null, '', url.toString());
+        location.hash = tab;
       }catch(e){ /* noop */ }
     }
 
