@@ -4,7 +4,12 @@
   "description": "This README captures how the app is organised today (single‑file offline web app) and how to extend it (auto‑fill, quiz, Excel/Google Sheets import, picture OCR, and optional Firebase sync). Use it as your source of truth for building, deploying, and running the project.",
   "main": "test_vocab_app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No unit tests\"",
+    "pw:install": "playwright install --with-deps",
+    "pw:test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.46.0"
   },
   "keywords": [],
   "author": "",
