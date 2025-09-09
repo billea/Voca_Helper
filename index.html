@@ -502,6 +502,7 @@
             </div>
             <button class="btn" id="sbSignInMagic">Send Magic Link</button>
             <button class="btn" id="sbSignInGithub">GitHub Login</button>
+            <button class="btn" id="sbSignInGoogle">Google Login</button>
             <button class="btn" id="sbSignOut">Sign Out</button>
           </div>
           <div class="row" style="gap:10px; margin-top:8px">
@@ -2801,6 +2802,13 @@ Expected JSON format:
           if(!supabaseClient){ toast('Configure Supabase first'); return; }
           // Use Supabase Auth SITE_URL as the redirect
           await supabaseClient.auth.signInWithOAuth({ provider:'github' });
+        });
+      }
+      const signGoogle = $('#sbSignInGoogle');
+      if(signGoogle){
+        signGoogle.addEventListener('click', async ()=>{
+          if(!supabaseClient){ toast('Configure Supabase first'); return; }
+          await supabaseClient.auth.signInWithOAuth({ provider:'google' });
         });
       }
       const signOutBtn = $('#sbSignOut');
