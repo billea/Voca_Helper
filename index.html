@@ -2608,9 +2608,12 @@ Expected JSON format:
     $('#quitQuizBtn').addEventListener('click', quitQuiz);
     
     // Quiz type changes now only affect quiz generation, not question count
-    $('#quizType').addEventListener('change', () => {
-      // Quiz question count is now determined by selected groups
-    });
+    const quizTypeEl = $('#quizType');
+    if (quizTypeEl) {
+      quizTypeEl.addEventListener('change', () => {
+        // Quiz question count is now determined by selected groups
+      });
+    }
     
     function quitQuiz() {
       if (confirm('Are you sure you want to quit the quiz? Your progress will be lost.')) {
