@@ -232,6 +232,22 @@
               <option value="missed">Missed Words Only</option>
             </select>
           </div>
+          <div>
+            <label>Questions</label>
+            <select id="quizQuestionCount">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="40" selected>40</option>
+              <option value="80">80</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:flex; align-items:center; gap:6px;">
+              <input type="checkbox" id="fastDistractors" style="margin:0; width:16px; height:16px;">
+              ⚡ Fast distractors
+              <span class="muted small" style="cursor:help" title="Faster quiz startup using simpler distractor heuristics. May slightly reduce semantic variety.">ⓘ</span>
+            </label>
+          </div>
           <button class="btn primary" id="startQuizBtn">Start Quiz</button>
         </div>
         
@@ -432,10 +448,22 @@
           </div>
         </div>
         
-        <div class="row" style="gap:8px">
-          <button class="btn" id="exportBtn2">Export JSON</button>
-          <button class="btn" id="exportCSV">Export CSV</button>
-        </div>
+          <div class="row" style="gap:8px">
+            <button class="btn" id="exportBtn2">Export JSON</button>
+            <button class="btn" id="exportCSV">Export CSV</button>
+            <button class="btn" id="exportXLSX">Export Excel (.xlsx)</button>
+          </div>
+          <div class="muted small" style="margin-top:6px">
+            Columns included: <span id="exportColumnsSummary"></span>
+            <button class="btn ghost small" id="toggleExportColumns" style="margin-left:6px">Choose columns</button>
+          </div>
+          <div id="exportColumnsPanel" class="muted small" style="display:none; margin-top:6px; padding:8px; border:1px solid var(--muted); border-radius:8px;">
+            <div style="margin-bottom:6px">
+              <button class="btn ghost small" id="selectAllCols">Select All</button>
+              <button class="btn ghost small" id="deselectAllCols">Deselect All</button>
+            </div>
+            <div id="exportColumnsCheckboxes" style="display:flex; flex-wrap:wrap; gap:8px"></div>
+          </div>
         
         <div class="hr"></div>
         <h3>Auto-fill Missing Data</h3>
@@ -1568,27 +1596,139 @@
     // Import / Export
     $('#exportBtn2').addEventListener('click', exportJSON);
     $('#exportCSV').addEventListener('click', exportCSV);
+    $('#exportXLSX').addEventListener('click', exportXLSX);
+
+    // Export column configuration
+    const EXPORT_COLUMNS = [
+      { key:'id', label:'id' },
+      { key:'word', label:'word' },
+      { key:'definition', label:'definition' },
+      { key:'example', label:'example' },
+      { key:'morphology', label:'morphology' },
+      { key:'synonyms', label:'synonyms' },
+      { key:'antonyms', label:'antonyms' },
+      { key:'pos', label:'pos' },
+      { key:'saved', label:'saved' },
+      { key:'mistake', label:'mistake' },
+      { key:'slow_correct', label:'slow_correct' },
+      { key:'is_leech', label:'is_leech' },
+      { key:'wrong_count', label:'wrong_count' },
+      { key:'interval', label:'interval' },
+      { key:'ef', label:'ef' },
+      { key:'reps', label:'reps' },
+      { key:'seen', label:'seen' },
+      { key:'due_iso', label:'due_iso' },
+      { key:'created_iso', label:'created_iso' },
+      { key:'updated_iso', label:'updated_iso' },
+      { key:'quiz_completed', label:'quiz_completed' },
+      { key:'quiz_cycle', label:'quiz_cycle' },
+      { key:'mistake_sessions', label:'mistake_sessions' }
+    ];
+
+    function getSelectedExportColumnKeys(){
+      let sel = prefs.exportColumnsSelected;
+      if (!Array.isArray(sel) || sel.length === 0) {
+        sel = EXPORT_COLUMNS.map(c => c.key);
+        prefs.exportColumnsSelected = sel;
+        savePrefs();
+      }
+      return sel;
+    }
+
+    function updateExportColumnsSummary(){
+      const summary = $('#exportColumnsSummary');
+      if (!summary) return;
+      const keys = getSelectedExportColumnKeys();
+      summary.innerHTML = keys.map(k => `<code>${k}</code>`).join(', ');
+    }
+
+    function renderExportColumnsControls(){
+      const panel = $('#exportColumnsPanel');
+      const list = $('#exportColumnsCheckboxes');
+      const toggleBtn = $('#toggleExportColumns');
+      if (!panel || !list || !toggleBtn) return;
+
+      toggleBtn.addEventListener('click', () => {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      });
+
+      const selected = new Set(getSelectedExportColumnKeys());
+      list.innerHTML = '';
+      EXPORT_COLUMNS.forEach(col => {
+        const label = document.createElement('label');
+        label.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--muted);padding:4px 8px;border-radius:6px;';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.dataset.colKey = col.key;
+        input.checked = selected.has(col.key);
+        input.style.cssText = 'margin:0;width:12px;height:12px;';
+        const span = document.createElement('span');
+        span.textContent = col.label;
+        label.appendChild(input); label.appendChild(span);
+        list.appendChild(label);
+      });
+
+      list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const keys = Array.from(list.querySelectorAll('input[type="checkbox"]:checked')).map(el => el.dataset.colKey);
+          prefs.exportColumnsSelected = keys;
+          savePrefs();
+          updateExportColumnsSummary();
+        });
+      });
+
+      $('#selectAllCols').addEventListener('click', () => {
+        list.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = true);
+        prefs.exportColumnsSelected = EXPORT_COLUMNS.map(c => c.key);
+        savePrefs();
+        updateExportColumnsSummary();
+      });
+      $('#deselectAllCols').addEventListener('click', () => {
+        list.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+        prefs.exportColumnsSelected = [];
+        savePrefs();
+        updateExportColumnsSummary();
+      });
+    }
 
     function getSelectedExportCards() {
-      const selectedGroupIds = new Set();
       const exportGroupCheckboxes = $$('#exportGroupCheckboxes input[type="checkbox"]:checked');
       
-      // If no checkboxes are checked, use all groups
-      if (exportGroupCheckboxes.length === 0) {
-        return cards; // Return all cards if none selected
-      }
-      
-      exportGroupCheckboxes.forEach(cb => {
-        selectedGroupIds.add(cb.dataset.groupId);
-      });
-      
+      // If no checkboxes are checked, export all cards
+      if (exportGroupCheckboxes.length === 0) return cards;
+
+      const currentCycle = getCurrentQuizCycle();
+      const selectedGroupIds = new Set();
       const selectedCardIds = new Set();
-      wordGroups.forEach(group => {
-        if (selectedGroupIds.has(group.id)) {
-          group.cardIds.forEach(cardId => selectedCardIds.add(cardId));
+
+      exportGroupCheckboxes.forEach(cb => {
+        const gid = cb.dataset.groupId || '';
+        if (gid.startsWith('special:')) {
+          if (gid === 'special:saved') {
+            cards.filter(c => c.saved).forEach(c => selectedCardIds.add(c.id));
+          } else if (gid === 'special:mistakes') {
+            cards.filter(c => c.mistake).forEach(c => selectedCardIds.add(c.id));
+          } else if (gid === 'special:slow') {
+            cards.filter(c => c.slow_correct).forEach(c => selectedCardIds.add(c.id));
+          } else if (gid === 'special:quiz_remaining') {
+            cards
+              .filter(c => (c.quiz_cycle || 1) === currentCycle && !(c.quiz_completed || false))
+              .forEach(c => selectedCardIds.add(c.id));
+          }
+        } else {
+          selectedGroupIds.add(gid);
         }
       });
-      
+
+      // Merge cards from selected custom groups
+      if (selectedGroupIds.size > 0) {
+        wordGroups.forEach(group => {
+          if (selectedGroupIds.has(group.id)) {
+            group.cardIds.forEach(cardId => selectedCardIds.add(cardId));
+          }
+        });
+      }
+
       return cards.filter(card => selectedCardIds.has(card.id));
     }
     
@@ -1603,14 +1743,62 @@
     
     function exportCSV(){
       const cardsToExport = getSelectedExportCards();
-      const headers = ['word','definition','example','morphology','synonyms','antonyms','pos'];
-      const rows = cardsToExport.map(c=> headers.map(h=> csvCell(c[h]||''))); 
-      const csv = [headers.join(','), ...rows.map(r=> r.join(','))].join('\n');
+      const keys = getSelectedExportColumnKeys();
+      const toISO = (ts) => (typeof ts === 'number' && ts > 0) ? new Date(ts).toISOString() : '';
+      const toList = (v) => Array.isArray(v) ? v.join(';') : (v || '');
+      const valueFor = (c, k) => {
+        if (k === 'due_iso') return toISO(c.due);
+        if (k === 'created_iso') return toISO(c.created);
+        if (k === 'updated_iso') return toISO(c.updated);
+        if (k === 'mistake_sessions') return toList(c.mistake_sessions);
+        return (c[k] !== undefined ? c[k] : '');
+      };
+      const rows = cardsToExport.map(c => keys.map(k => csvCell(valueFor(c, k))));
+      const csv = [keys.join(','), ...rows.map(r=> r.join(','))].join('\n');
       const blob = new Blob([csv], {type:'text/csv'});
       const exportGroupCheckboxes = $$('#exportGroupCheckboxes input[type="checkbox"]:checked');
       const filename = exportGroupCheckboxes.length === 0 ? 'vocab_cards_all.csv' : 'vocab_cards_selected_groups.csv';
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href);
       toast(`Exported ${cardsToExport.length} cards to CSV`);
+    }
+    
+    async function loadXLSX(){
+      if (window.XLSX) return window.XLSX;
+      return new Promise((resolve, reject)=>{
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+        s.onload = ()=> resolve(window.XLSX);
+        s.onerror = ()=> reject(new Error('Failed to load Excel exporter'));
+        document.head.appendChild(s);
+      });
+    }
+
+    async function exportXLSX(){
+      try{
+        const cardsToExport = getSelectedExportCards();
+        const headers = getSelectedExportColumnKeys();
+        const toISO = (ts) => (typeof ts === 'number' && ts > 0) ? new Date(ts).toISOString() : '';
+        const toList = (v) => Array.isArray(v) ? v.join(';') : (v || '');
+        const valueFor = (c, k) => {
+          if (k === 'due_iso') return toISO(c.due);
+          if (k === 'created_iso') return toISO(c.created);
+          if (k === 'updated_iso') return toISO(c.updated);
+          if (k === 'mistake_sessions') return toList(c.mistake_sessions);
+          return (c[k] !== undefined ? c[k] : '');
+        };
+        const aoa = [ headers, ...cardsToExport.map(c => headers.map(k => valueFor(c, k))) ];
+        const XLSX = await loadXLSX();
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        XLSX.utils.book_append_sheet(wb, ws, 'Vocab');
+        const exportGroupCheckboxes = $$('#exportGroupCheckboxes input[type="checkbox"]:checked');
+        const filename = exportGroupCheckboxes.length === 0 ? 'vocab_cards_all.xlsx' : 'vocab_cards_selected_groups.xlsx';
+        XLSX.writeFile(wb, filename);
+        toast(`Exported ${cardsToExport.length} cards to Excel`);
+      }catch(err){
+        console.error(err);
+        toast('Excel export failed. Check internet connection and try again.');
+      }
     }
     function csvCell(v){ v = (''+v).replace(/"/g,'""'); if(/[",\n]/.test(v)) return '"'+v+'"'; return v; }
 
@@ -2586,6 +2774,27 @@ Expected JSON format:
     $('#stopPOSFill').addEventListener('click', ()=>{ _fillAbort = true; toast('Stopping...'); });
 
     // Quiz Mode Functionality
+    const DEBUG_QUIZ = false; // Toggle verbose quiz logs
+    const QUIZ_MAX_QUESTIONS = 40; // Cap questions to speed startup
+    const QUIZ_DISTRACTOR_POOL_LIMIT = 120; // Limit search pool for distractors
+    const DEF_ANALYSIS_CACHE = new Map();
+    const TEXT_SIM_CACHE = new Map();
+    let FAST_QUIZ = false; // Fast distractor generation flag (persisted in prefs)
+
+    function qlog(){ if (DEBUG_QUIZ) console.log.apply(console, arguments); }
+    function sampleArray(arr, maxCount){
+      if (!Array.isArray(arr)) return [];
+      if (arr.length <= maxCount) return arr.slice();
+      const pool = arr.slice();
+      const out = [];
+      for (let i = 0; i < maxCount; i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        out.push(pool[idx]);
+        pool.splice(idx, 1);
+      }
+      return out;
+    }
+
     let quizData = {
       questions: [],
       currentIndex: 0,
@@ -2598,6 +2807,84 @@ Expected JSON format:
     };
 
     $('#startQuizBtn').addEventListener('click', startQuiz);
+    // Persist quiz question count preference
+    const quizCountEl = $('#quizQuestionCount');
+    if (quizCountEl) {
+      if (prefs.quizQuestionCount) {
+        quizCountEl.value = String(prefs.quizQuestionCount);
+      }
+      quizCountEl.addEventListener('change', () => {
+        const v = parseInt(quizCountEl.value, 10) || 40;
+        prefs.quizQuestionCount = v;
+        savePrefs();
+      });
+    }
+
+    // Persist quiz type selections (All / individual checkboxes)
+    const quizTypeAllEl = $('#quizTypeAll');
+    const quizTypeOptionEls = $$('.quiz-type-option');
+    function saveSelectedQuizTypes(){
+      let types = [];
+      quizTypeOptionEls.forEach(cb => { if (cb.checked) types.push(cb.value); });
+      if (quizTypeAllEl && quizTypeAllEl.checked) {
+        types = ['definitions','synonyms','antonyms'];
+      }
+      if (types.length === 0) types = ['definitions'];
+      prefs.quizSelectedTypes = types;
+      savePrefs();
+    }
+    function applySelectedQuizTypesFromPrefs(){
+      let types = Array.isArray(prefs.quizSelectedTypes) && prefs.quizSelectedTypes.length ? prefs.quizSelectedTypes : ['definitions'];
+      quizTypeOptionEls.forEach(cb => { cb.checked = types.includes(cb.value); });
+      if (quizTypeAllEl) quizTypeAllEl.checked = types.length === 3;
+    }
+    if (quizTypeAllEl || quizTypeOptionEls.length){
+      applySelectedQuizTypesFromPrefs();
+      if (quizTypeAllEl) {
+        quizTypeAllEl.addEventListener('change', () => {
+          const on = quizTypeAllEl.checked;
+          quizTypeOptionEls.forEach(cb => cb.checked = on);
+          saveSelectedQuizTypes();
+        });
+      }
+      quizTypeOptionEls.forEach(cb => {
+        cb.addEventListener('change', () => {
+          if (quizTypeAllEl) quizTypeAllEl.checked = quizTypeOptionEls.every(x => x.checked);
+          saveSelectedQuizTypes();
+        });
+      });
+    }
+
+    // Persist word selection mode (all / missed)
+    const wordSelectionEl = $('#wordSelectionMode');
+    if (wordSelectionEl) {
+      if (prefs.quizWordSelectionMode) {
+        wordSelectionEl.value = prefs.quizWordSelectionMode;
+      }
+      wordSelectionEl.addEventListener('change', () => {
+        prefs.quizWordSelectionMode = wordSelectionEl.value || 'all';
+        savePrefs();
+      });
+    }
+
+    // Persist fast distractor mode
+    const fastDistractorsEl = $('#fastDistractors');
+    if (fastDistractorsEl) {
+      if (typeof prefs.fastQuiz === 'boolean') {
+        fastDistractorsEl.checked = prefs.fastQuiz;
+      } else {
+        // Default OFF for quality unless previously set
+        prefs.fastQuiz = false;
+        savePrefs();
+        fastDistractorsEl.checked = false;
+      }
+      FAST_QUIZ = !!fastDistractorsEl.checked;
+      fastDistractorsEl.addEventListener('change', () => {
+        prefs.fastQuiz = !!fastDistractorsEl.checked;
+        FAST_QUIZ = prefs.fastQuiz;
+        savePrefs();
+      });
+    }
     $('#newQuizBtn').addEventListener('click', () => {
       $('#quizResults').style.display = 'none';
       $('#quizSetup').style.display = 'block';
@@ -2896,15 +3183,14 @@ Expected JSON format:
     }
 
     function startQuiz() {
-      console.log('*** STARTING QUIZ ***');
-      console.log('Current viewMode:', viewMode);
-      console.log('Current mistake session:', currentMistakeSession);
-      console.log('Session data available:', Object.keys(mistakeSessionData));
-      console.trace('Quiz started from:');
+      qlog('*** STARTING QUIZ ***');
+      qlog('Current viewMode:', viewMode);
+      qlog('Current mistake session:', currentMistakeSession);
+      qlog('Session data available:', Object.keys(mistakeSessionData));
       
       // Get selected quiz types
       const selectedTypes = getSelectedQuizTypes();
-      const wordSelectionMode = $('#wordSelectionMode').value || 'all';
+      const wordSelectionMode = (prefs.quizWordSelectionMode || ($('#wordSelectionMode') && $('#wordSelectionMode').value) || 'all');
       
       // Get selected groups for quiz
       const selectedGroupIds = new Set();
@@ -2916,12 +3202,16 @@ Expected JSON format:
       // If no groups selected, use active groups or all groups
       const groupsToUse = selectedGroupIds.size > 0 ? selectedGroupIds : (activeGroups.size > 0 ? activeGroups : new Set(wordGroups.map(g => g.id)));
       
-      // Calculate question count based on selected groups (each group has ~200 words)
-      let count = Math.min(groupsToUse.size * 200, 2000); // Cap at 2000 questions max
+      // Calculate question count from selector, bounded by available groups
+      const requestedCount = parseInt(($('#quizQuestionCount') && $('#quizQuestionCount').value) || '40', 10) || 40;
+      // Save requested count to preferences
+      prefs.quizQuestionCount = requestedCount;
+      savePrefs();
+      let count = Math.min(groupsToUse.size * 200, Math.max(1, requestedCount));
       
-      console.log('🎯 QUIZ DEBUG: Selected quiz types:', selectedTypes);
-      console.log('🎯 QUIZ DEBUG: Selected groups:', groupsToUse.size);
-      console.log('🎯 QUIZ DEBUG: Calculated question count:', count);
+      qlog('🎯 QUIZ DEBUG: Selected quiz types:', selectedTypes);
+      qlog('🎯 QUIZ DEBUG: Selected groups:', groupsToUse.size);
+      qlog('🎯 QUIZ DEBUG: Calculated question count:', count);
       
       // Get all cards that have data for at least one of the selected quiz types
       let allAvailableCards = cards.filter(c => {
@@ -2936,10 +3226,10 @@ Expected JSON format:
         });
       });
       
-      console.log('🎯 QUIZ DEBUG: Available cards for selected type:', allAvailableCards.length);
+      qlog('🎯 QUIZ DEBUG: Available cards for selected type:', allAvailableCards.length);
       
       if (allAvailableCards.length < 1) {
-        console.log('❌ NO CARDS: Selected quiz types have no available cards');
+        qlog('❌ NO CARDS: Selected quiz types have no available cards');
         
         // Check availability for each type
         const definitionCards = cards.filter(c => c.definition && c.definition.trim());
@@ -2977,7 +3267,7 @@ Expected JSON format:
         if (currentMistakeSession === 'all') {
           // Get all cards that have ever been in any mistake session (not just currently marked as mistakes)
           priorityCards = allAvailableCards.filter(c => c.mistake_sessions && c.mistake_sessions.length > 0);
-          console.log(`*** QUIZ MODE: All mistake sessions - ${priorityCards.length} cards found (all cards that have been in any session) ***`);
+          qlog(`*** QUIZ MODE: All mistake sessions - ${priorityCards.length} cards found (all cards that have been in any session) ***`);
         } else {
           priorityCards = allAvailableCards.filter(c => c.mistake_sessions && c.mistake_sessions.includes(currentMistakeSession));
           console.log(`*** QUIZ MODE: Session ${currentMistakeSession} - ${priorityCards.length} cards found ***`);
@@ -3029,41 +3319,38 @@ Expected JSON format:
       }
       
       if (availableCards.length < 1) {
-        const requirement = type === 'definitions' ? 'definitions' : type;
+        const firstType = selectedTypes && selectedTypes[0] || 'definitions';
+        const requirement = firstType === 'definitions' ? 'definitions' : firstType;
         alert(`No cards available with ${requirement} data for quiz. Current: ${availableCards.length}`);
         return;
       }
       
-      // Generate quiz questions
-      console.log('🎯 QUIZ DEBUG: About to generate questions with types:', selectedTypes);
-      console.log('🎯 QUIZ DEBUG: Available cards:', availableCards.length);
-      
+      // Lazy generate questions for instant start
+      qlog('🎯 QUIZ DEBUG: Lazy generation mode with types:', selectedTypes, 'pool:', availableCards.length, 'target:', count);
       quizData = {
-        questions: generateMixedQuizQuestions(availableCards, selectedTypes, count),
+        questions: [],
         currentIndex: 0,
         score: 0,
         answers: [],
-        types: selectedTypes, // Store all selected types
+        types: selectedTypes,
         timeLeft: 10,
         timer: null,
-        mistakes: []
+        mistakes: [],
+        pool: availableCards,
+        targetCount: count
       };
-      
-      console.log('🎯 QUIZ DEBUG: Generated questions:', quizData.questions.length);
-      console.log('🎯 QUIZ DEBUG: Quiz data types:', quizData.types);
-      if (quizData.questions.length > 0) {
-        console.log('🎯 QUIZ DEBUG: First question sample:', quizData.questions[0]);
-      }
+      // Show game UI immediately for responsiveness
+      $('#quizSetup').style.display = 'none';
+      $('#quizGame').style.display = 'block';
+
+      try { generateNextQuestionSync(); } catch(e) { console.error('First question generation failed', e); }
+      setTimeout(() => prefetchQuestionsAsync(Math.min(8, quizData.targetCount)), 0);
       
       if (quizData.questions.length === 0) {
         const requirement = selectedTypes.join('/');
-        alert(`Unable to generate enough questions. Make sure your cards have sufficient ${requirement} data.`);
+        alert(`Unable to generate a question. Ensure your cards include ${requirement} data.`);
         return;
       }
-      
-      // Start quiz UI
-      $('#quizSetup').style.display = 'none';
-      $('#quizGame').style.display = 'block';
       
       // Set dynamic title based on selected types
       let titleText;
@@ -3088,6 +3375,64 @@ Expected JSON format:
       showQuestion();
     }
 
+    function chooseQuestionType() {
+      const t = quizData.types || ['definitions'];
+      return t[Math.floor(Math.random() * t.length)] || 'definitions';
+    }
+
+    function pickCardForType(type) {
+      const field = type === 'definitions' ? 'definition' : (type === 'synonyms' ? 'synonyms' : 'antonyms');
+      const pool = quizData.pool || [];
+      const eligible = pool.filter(c => {
+        if (field === 'definition') return c.definition && c.definition.trim();
+        const val = c[field];
+        return val && val.trim() && val.split(',').some(w => w.trim());
+      });
+      if (eligible.length === 0) return null;
+      const sample = sampleArray(eligible, Math.min(eligible.length, 50));
+      return sample[Math.floor(Math.random() * sample.length)];
+    }
+
+    function buildQuestion(card, type) {
+      if (!card) return null;
+      if (type === 'definitions') {
+        const correct = (card.definition || '').trim();
+        if (!correct) return null;
+        const distractors = generateSmartDefinitionDistractors(card, quizData.pool || cards, correct);
+        const opts = [correct, ...distractors].sort(() => Math.random() - 0.5);
+        return { word: card.word, correctAnswer: correct, options: opts, correctIndex: opts.indexOf(correct), questionType: 'definitions' };
+      } else {
+        const field = type === 'synonyms' ? 'synonyms' : 'antonyms';
+        const words = (card[field] || '').split(',').map(w => w.trim()).filter(Boolean);
+        if (words.length === 0) return null;
+        const correct = words[Math.floor(Math.random() * words.length)];
+        const distractors = generateSmartWordDistractors(card, quizData.pool || cards, correct, type);
+        const opts = [correct, ...distractors].sort(() => Math.random() - 0.5);
+        return { word: card.word, correctAnswer: correct, options: opts, correctIndex: opts.indexOf(correct), questionType: type };
+      }
+    }
+
+    function generateNextQuestionSync() {
+      if (!quizData || quizData.questions.length >= (quizData.targetCount || 0)) return;
+      const type = chooseQuestionType();
+      const card = pickCardForType(type);
+      const q = buildQuestion(card, type);
+      if (q && q.options && q.options.length > 0) quizData.questions.push(q);
+    }
+
+    function prefetchQuestionsAsync(target) {
+      if (!quizData) return;
+      const limit = Math.min(target, quizData.targetCount || 0);
+      const genChunk = () => {
+        const start = Date.now();
+        while (quizData.questions.length < limit && (Date.now() - start) < 30) {
+          generateNextQuestionSync();
+        }
+        if (quizData.questions.length < limit) setTimeout(genChunk, 0);
+      };
+      setTimeout(genChunk, 0);
+    }
+
     // Generate questions for multiple quiz types mixed together
     function generateMixedQuizQuestions(availableCards, types, maxCount) {
       console.log('🎲 MIXED QUIZ: Generating questions for types:', types);
@@ -3110,6 +3455,8 @@ Expected JSON format:
                    c[field].split(',').filter(w => w.trim()).length > 0;
           }
         });
+        // Limit pool size for speed
+        typeCards = sampleArray(typeCards, Math.max(questionsPerType * 3, 30));
         
         console.log(`🎲 MIXED QUIZ: Cards available for ${type}:`, typeCards.length);
         
@@ -3142,7 +3489,7 @@ Expected JSON format:
       console.log('🔄 GENERATE DEBUG: Available cards:', availableCards.length);
       
       const questions = [];
-      const shuffledCards = [...availableCards].sort(() => Math.random() - 0.5);
+      const shuffledCards = sampleArray(availableCards, Math.max(maxCount * 3, 30)).sort(() => Math.random() - 0.5);
       
       if (type === 'definitions') {
         console.log('🔄 GENERATE DEBUG: Generating DEFINITION questions');
@@ -3224,17 +3571,31 @@ Expected JSON format:
     function generateSmartDefinitionDistractors(targetCard, allCards, correctAnswer) {
       const distractors = [];
       const otherCards = allCards.filter(c => c.id !== targetCard.id && c.definition && c.definition.trim());
+      const otherSample = sampleArray(otherCards, QUIZ_DISTRACTOR_POOL_LIMIT);
       
-      console.log(`🎯 DEFINITION QUIZ: Generating distractors for "${targetCard.word}" (${targetCard.pos})`);
-      console.log(`🎯 Available other cards: ${otherCards.length}`);
+      // Fast path: pick by length and simple similarity only
+      if (FAST_QUIZ) {
+        const minLen = Math.max(10, Math.floor(correctAnswer.length * 0.6));
+        const maxLen = Math.ceil(correctAnswer.length * 1.6);
+        const pool = otherSample
+          .map(c => c.definition.trim())
+          .filter(def => def !== correctAnswer && def.length >= minLen && def.length <= maxLen)
+          .filter(def => calculateTextSimilarity(def.toLowerCase(), correctAnswer.toLowerCase()) <= 0.7);
+        // Sample up to 3
+        const picks = sampleArray(pool, 3);
+        return picks.slice(0, 3);
+      }
+      
+      qlog(`🎯 DEFINITION QUIZ: Generating distractors for "${targetCard.word}" (${targetCard.pos})`);
+      qlog(`🎯 Available other cards (sampled): ${otherSample.length}`);
       
       // Analyze the target definition for better matching
       const targetAnalysis = analyzeDefinition(correctAnswer, targetCard);
       
       // Priority 1: Same part of speech with semantic similarity scoring
       if (targetCard.pos) {
-        const samePOSCards = otherCards.filter(c => c.pos && c.pos.toLowerCase() === targetCard.pos.toLowerCase());
-        console.log(`🎯 Same POS cards (${targetCard.pos}): ${samePOSCards.length}`);
+        const samePOSCards = otherSample.filter(c => c.pos && c.pos.toLowerCase() === targetCard.pos.toLowerCase());
+        qlog(`🎯 Same POS cards (${targetCard.pos}): ${samePOSCards.length}`);
         
         // Score and sort by semantic appropriateness
         const scoredCards = samePOSCards.map(card => ({
@@ -3251,21 +3612,21 @@ Expected JSON format:
           if (!distractors.includes(distractor) && distractor !== correctAnswer && 
               isValidDefinitionDistractor(distractor, correctAnswer, targetAnalysis)) {
             distractors.push(distractor);
-            console.log(`✅ Added same-POS distractor: "${distractor.substring(0, 30)}..." (score: ${candidate.score.toFixed(2)})`);
+            qlog(`✅ Added same-POS distractor: "${distractor.substring(0, 30)}..." (score: ${candidate.score.toFixed(2)})`);
           }
           goodMatches.splice(goodMatches.indexOf(candidate), 1);
         }
       }
       
       // Priority 2: Related semantic domains (even if different POS)
-      const relatedCards = otherCards.filter(card => {
+      const relatedCards = otherSample.filter(card => {
         if (targetCard.pos && card.pos && card.pos.toLowerCase() === targetCard.pos.toLowerCase()) {
           return false; // Already handled above
         }
         return calculateSemanticRelatedness(targetCard, card) > 0.3; // Moderate relatedness
       });
       
-      console.log(`🎯 Semantically related cards: ${relatedCards.length}`);
+      qlog(`🎯 Semantically related cards: ${relatedCards.length}`);
       
       while (distractors.length < 3 && relatedCards.length > 0) {
         const randomCard = relatedCards[Math.floor(Math.random() * relatedCards.length)];
@@ -3273,19 +3634,19 @@ Expected JSON format:
         if (!distractors.includes(distractor) && distractor !== correctAnswer &&
             isValidDefinitionDistractor(distractor, correctAnswer, targetAnalysis)) {
           distractors.push(distractor);
-          console.log(`✅ Added related distractor: "${distractor.substring(0, 30)}..."`);
+          qlog(`✅ Added related distractor: "${distractor.substring(0, 30)}..."`);
         }
         relatedCards.splice(relatedCards.indexOf(randomCard), 1);
       }
       
       // Priority 3: Similar complexity and length, different domains
-      const complexityCards = otherCards.filter(c => {
+      const complexityCards = otherSample.filter(c => {
         const defAnalysis = analyzeDefinition(c.definition.trim(), c);
         return Math.abs(defAnalysis.complexity - targetAnalysis.complexity) <= 1 && // Similar complexity
                Math.abs(c.definition.trim().length - correctAnswer.length) <= correctAnswer.length * 0.4; // Similar length
       });
       
-      console.log(`🎯 Similar complexity cards: ${complexityCards.length}`);
+      qlog(`🎯 Similar complexity cards: ${complexityCards.length}`);
       
       while (distractors.length < 3 && complexityCards.length > 0) {
         const randomCard = complexityCards[Math.floor(Math.random() * complexityCards.length)];
@@ -3293,13 +3654,13 @@ Expected JSON format:
         if (!distractors.includes(distractor) && distractor !== correctAnswer &&
             isValidDefinitionDistractor(distractor, correctAnswer, targetAnalysis)) {
           distractors.push(distractor);
-          console.log(`✅ Added complexity-matched distractor: "${distractor.substring(0, 30)}..."`);
+          qlog(`✅ Added complexity-matched distractor: "${distractor.substring(0, 30)}..."`);
         }
         complexityCards.splice(complexityCards.indexOf(randomCard), 1);
       }
       
       // Priority 4: Fallback with quality filtering
-      const fallbackCards = otherCards.filter(c => 
+      const fallbackCards = otherSample.filter(c => 
         c.definition.trim().length >= 15 && // Minimum meaningful length
         c.definition.trim().length <= correctAnswer.length * 2 && // Not too long
         !isDuplicateOrTooSimilar(c.definition.trim(), correctAnswer, distractors)
@@ -3310,12 +3671,12 @@ Expected JSON format:
         const distractor = randomCard.definition.trim();
         if (!distractors.includes(distractor) && distractor !== correctAnswer) {
           distractors.push(distractor);
-          console.log(`✅ Added fallback distractor: "${distractor.substring(0, 30)}..."`);
+          qlog(`✅ Added fallback distractor: "${distractor.substring(0, 30)}..."`);
         }
         fallbackCards.splice(fallbackCards.indexOf(randomCard), 1);
       }
       
-      console.log(`🎯 Final distractors count: ${distractors.length}`);
+      qlog(`🎯 Final distractors count: ${distractors.length}`);
       return distractors;
     }
 
@@ -3323,7 +3684,33 @@ Expected JSON format:
     function generateSmartWordDistractors(targetCard, allCards, correctAnswer, quizType) {
       const distractors = [];
       const field = quizType === 'synonyms' ? 'synonyms' : 'antonyms';
-      const otherCards = allCards.filter(c => c.id !== targetCard.id);
+      const otherCards = sampleArray(allCards.filter(c => c.id !== targetCard.id), QUIZ_DISTRACTOR_POOL_LIMIT);
+      
+      // Fast path: flatten pool of candidate words and sample
+      if (FAST_QUIZ) {
+        const pool = [];
+        for (const c of otherCards) {
+          const raw = c[field];
+          if (!raw) continue;
+          raw.split(',').forEach(w => {
+            const v = w.trim();
+            if (v) pool.push(v);
+          });
+        }
+        // Filter out bad candidates and duplicates
+        const seen = new Set();
+        const filtered = [];
+        const targetWord = (targetCard.word || '').toLowerCase();
+        for (const w of pool) {
+          const wl = w.toLowerCase();
+          if (wl === targetWord) continue;
+          if (wl === (correctAnswer || '').toLowerCase()) continue;
+          if (seen.has(wl)) continue;
+          seen.add(wl);
+          filtered.push(w);
+        }
+        return sampleArray(filtered, 3);
+      }
       
       // Priority 1: Same part of speech words from the same field (synonyms/antonyms)
       if (targetCard.pos) {
@@ -3409,10 +3796,11 @@ Expected JSON format:
 
     // Analyze definition structure and content for better matching
     function analyzeDefinition(definition, card) {
+      const cacheKey = `${card && (card.id || card.word) || 'unknown'}|${definition}`;
+      if (DEF_ANALYSIS_CACHE.has(cacheKey)) return DEF_ANALYSIS_CACHE.get(cacheKey);
       const def = definition.toLowerCase();
       const words = def.split(/\s+/).filter(w => w.length > 2);
-      
-      return {
+      const result = {
         length: definition.length,
         wordCount: words.length,
         complexity: calculateDefinitionComplexity(definition),
@@ -3422,6 +3810,8 @@ Expected JSON format:
         domain: inferSemanticDomain(def, card),
         structure: getDefinitionStructure(def)
       };
+      DEF_ANALYSIS_CACHE.set(cacheKey, result);
+      return result;
     }
 
     // Calculate definition complexity based on vocabulary and structure
@@ -3641,22 +4031,29 @@ Expected JSON format:
 
     // Simple text similarity calculation
     function calculateTextSimilarity(text1, text2) {
-      const words1 = new Set(text1.split(/\s+/).filter(w => w.length > 2));
-      const words2 = new Set(text2.split(/\s+/).filter(w => w.length > 2));
-      
-      if (words1.size === 0 && words2.size === 0) return 1;
-      if (words1.size === 0 || words2.size === 0) return 0;
-      
+      const a = (text1 || '').toLowerCase();
+      const b = (text2 || '').toLowerCase();
+      const key = a < b ? `${a}||${b}` : `${b}||${a}`;
+      if (TEXT_SIM_CACHE.has(key)) return TEXT_SIM_CACHE.get(key);
+      const words1 = new Set(a.split(/\s+/).filter(w => w.length > 2));
+      const words2 = new Set(b.split(/\s+/).filter(w => w.length > 2));
+      if (words1.size === 0 && words2.size === 0) { TEXT_SIM_CACHE.set(key, 1); return 1; }
+      if (words1.size === 0 || words2.size === 0) { TEXT_SIM_CACHE.set(key, 0); return 0; }
       const intersection = new Set([...words1].filter(w => words2.has(w)));
       const union = new Set([...words1, ...words2]);
-      
-      return intersection.size / union.size;
+      const val = intersection.size / union.size;
+      TEXT_SIM_CACHE.set(key, val);
+      return val;
     }
 
     function showQuestion() {
       if (quizData.currentIndex >= quizData.questions.length) {
-        showResults();
-        return;
+        // Try to lazily generate the next question if we haven't reached target
+        generateNextQuestionSync();
+        if (quizData.currentIndex >= quizData.questions.length) {
+          showResults();
+          return;
+        }
       }
       
       // Clear any existing timer
@@ -4088,12 +4485,55 @@ Expected JSON format:
         if (!container) return;
         
         container.innerHTML = '';
+
+        // Prepend special dynamic export sets for Export selector
+        if (containerId === 'exportGroupCheckboxes') {
+          const currentCycle = getCurrentQuizCycle();
+          const specials = [
+            { id: 'special:saved', name: 'Saved Words', count: cards.filter(c => c.saved).length },
+            { id: 'special:mistakes', name: 'Mistakes', count: cards.filter(c => c.mistake).length },
+            { id: 'special:slow', name: 'Slow', count: cards.filter(c => c.slow_correct).length },
+            { id: 'special:quiz_remaining', name: 'Quiz remaining', count: cards.filter(c => (c.quiz_cycle || 1) === currentCycle && !(c.quiz_completed || false)).length }
+          ];
+
+          specials.forEach(spec => {
+            const wrap = document.createElement('label');
+            wrap.style.cssText = `
+              display: inline-flex; align-items: center; gap: 4px; 
+              padding: 4px 8px; border-radius: 6px; cursor: pointer;
+              background: var(--panel);
+              border: 1px solid var(--muted);
+              color: var(--text);
+              font-size: 12px; margin: 2px;
+            `;
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.dataset.groupId = spec.id;
+            input.dataset.special = spec.id;
+            input.style.cssText = 'margin: 0; width: 12px; height: 12px;';
+            const label = document.createElement('span');
+            label.textContent = `${spec.name} (${spec.count})`;
+            wrap.appendChild(input);
+            wrap.appendChild(label);
+            container.appendChild(wrap);
+          });
+
+          if (wordGroups.length > 0) {
+            const sep = document.createElement('div');
+            sep.style.cssText = 'width:100%; height:0; margin:4px 0; border-top:1px dashed var(--muted)';
+            container.appendChild(sep);
+          }
+        }
         
         if (wordGroups.length === 0) {
-          container.innerHTML = '<span class="muted small">No groups available</span>';
+          if (containerId !== 'exportGroupCheckboxes') {
+            container.innerHTML = '<span class="muted small">No groups available</span>';
+          }
           return;
         }
         
+        const hasSavedQuizGroups = Array.isArray(prefs.quizSelectedGroupIds);
+        const persistedQuizGroups = hasSavedQuizGroups ? new Set(prefs.quizSelectedGroupIds) : null;
         wordGroups.forEach(group => {
           const checkbox = document.createElement('label');
           checkbox.style.cssText = `
@@ -4109,6 +4549,15 @@ Expected JSON format:
           input.type = 'checkbox';
           input.dataset.groupId = group.id;
           input.style.cssText = 'margin: 0; width: 12px; height: 12px;';
+          // Restore selection only for quiz container
+          if (containerId === 'quizGroupCheckboxes') {
+            if (persistedQuizGroups) {
+              input.checked = persistedQuizGroups.has(group.id);
+            } else {
+              // No saved preference yet: default to select all
+              input.checked = true;
+            }
+          }
           
           const label = document.createElement('span');
           label.textContent = `${group.name} (${group.cardIds.length})`;
@@ -4117,7 +4566,25 @@ Expected JSON format:
           checkbox.appendChild(label);
           container.appendChild(checkbox);
         });
+
+        // Attach change listeners to persist quiz group selections
+        if (containerId === 'quizGroupCheckboxes') {
+          container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', saveSelectedQuizGroups);
+          });
+          // If no saved selection existed, persist the default "all selected"
+          if (!hasSavedQuizGroups) {
+            saveSelectedQuizGroups();
+          }
+        }
       });
+    }
+
+    function saveSelectedQuizGroups() {
+      const checked = $$('#quizGroupCheckboxes input[type="checkbox"]:checked');
+      const ids = checked.map(cb => cb.dataset.groupId);
+      prefs.quizSelectedGroupIds = ids;
+      savePrefs();
     }
     
     // Group management event listeners
@@ -4142,10 +4609,12 @@ Expected JSON format:
     $('#selectAllGroupsQuiz').addEventListener('click', () => {
       const checkboxes = $$('#quizGroupCheckboxes input[type="checkbox"]');
       checkboxes.forEach(cb => cb.checked = true);
+      saveSelectedQuizGroups();
     });
     $('#deselectAllGroupsQuiz').addEventListener('click', () => {
       const checkboxes = $$('#quizGroupCheckboxes input[type="checkbox"]');
       checkboxes.forEach(cb => cb.checked = false);
+      saveSelectedQuizGroups();
     });
     
     // Export group selection event listeners
@@ -4228,6 +4697,10 @@ Expected JSON format:
     // Setup quiz type selection logic
     setupQuizTypeSelection();
     
+    // Initialize export columns UI
+    updateExportColumnsSummary();
+    renderExportColumnsControls();
+
     refreshUI(); buildQueue();
     // Initialize highlighting on page load
     updateKPIHighlight('total');

@@ -5,11 +5,15 @@
   "main": "test_vocab_app.js",
   "scripts": {
     "test": "echo \"No unit tests\"",
+    "test:browser": "node scripts/run_browser_tests.js",
+    "test:browser:all": "node scripts/run_all_browser_tests.js",
+    "test:validate": "node validate_functionality.js",
     "pw:install": "playwright install --with-deps",
     "pw:test": "playwright test"
   },
   "devDependencies": {
-    "@playwright/test": "^1.46.0"
+    "@playwright/test": "^1.46.0",
+    "playwright": "^1.55.0"
   },
   "keywords": [],
   "author": "",

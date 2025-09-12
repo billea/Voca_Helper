@@ -1,5 +1,7 @@
 # Vocabulary Memory Helper — Project Structure & Workflow
 
+[![Browser Tests](https://github.com/billea/Voca_Helper/actions/workflows/browser-tests.yml/badge.svg)](https://github.com/billea/Voca_Helper/actions/workflows/browser-tests.yml)
+
 This README captures how the app is organised today (single‑file offline web app) and how to extend it (auto‑fill, quiz, Excel/Google Sheets import, picture OCR, and optional Firebase sync). Use it as your source of truth for building, deploying, and running the project.
 
 ---

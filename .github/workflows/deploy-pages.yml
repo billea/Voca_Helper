@@ -1,0 +1,58 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare static site
+        run: |
+          mkdir -p dist
+          cp -v index.html dist/
+          # Optional sample data/assets if present
+          cp -v vocab_cards.json dist/ 2>/dev/null || true
+          cp -v netlify.toml dist/ 2>/dev/null || true
+          cp -v *.css dist/ 2>/dev/null || true
+          cp -v *.js dist/ 2>/dev/null || true
+          cp -v *.png dist/ 2>/dev/null || true
+          cp -v *.jpg dist/ 2>/dev/null || true
+          cp -v *.gif dist/ 2>/dev/null || true
+          cp -v *.svg dist/ 2>/dev/null || true
+          cp -v sample_*.csv dist/ 2>/dev/null || true
+          cp -v sample_vocab*.xlsx dist/ 2>/dev/null || true
+          # Exclude test pages and Node runners from the deployed artifact
+          rm -f dist/test_*.html dist/browser_test.html 2>/dev/null || true
+          rm -f dist/test_vocab_app.js dist/validate_functionality.js dist/final_test_validation.js 2>/dev/null || true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
