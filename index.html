@@ -2860,10 +2860,13 @@ Expected JSON format:
     });
 
     document.addEventListener('keydown', (e)=>{
-      if(e.key===' '){ e.preventDefault(); $('#revealBtn').click(); }
-      if(e.key==='ArrowLeft') $('#backBtn').click();
-      if(e.key==='ArrowRight') $('#nextBtn').click();
-      if(e.key==='s') $('#saveBtn').click();
+      const ae = document.activeElement;
+      const isTyping = ae && ((ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA') || ae.isContentEditable);
+      if (isTyping) return; // do not hijack keys while typing in inputs/textareas
+      if(e.key===' '){ e.preventDefault(); $('#revealBtn')?.click(); }
+      if(e.key==='ArrowLeft') $('#backBtn')?.click();
+      if(e.key==='ArrowRight') $('#nextBtn')?.click();
+      if(e.key==='s') $('#saveBtn')?.click();
       if(e.key==='?') help();
     });
 
