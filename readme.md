@@ -231,6 +231,24 @@ benevolent,kind and wanting to do good,The benevolent teacher helped everyone.,b
 - [ ] Offline: app loads and functions without network.  
 - [ ] Mobile viewport: tap targets big enough.
 
+### Playwright setup (local)
+Run browser-based tests locally with Playwright. If you see a "Host system is missing dependencies" error on Linux/WSL, install the OS libraries first.
+
+- Install deps and browsers
+  - Windows/macOS: `npx playwright install`
+  - Debian/Ubuntu/WSL:
+    - `sudo npx playwright install-deps`
+    - `npx playwright install`
+    - If `install-deps` is unavailable, install minimal libs: `sudo apt-get update && sudo apt-get install -y libnspr4 libnss3 libasound2t64`
+
+- Run the browser tests
+  - Direct: `node test_vocab_app.js`
+  - Scripts: `npm run test:browser` or `npm run test:browser:all`
+
+- Troubleshooting
+  - Error: "Host system is missing dependencies" → run the Linux commands above.
+  - Behind a proxy/firewall: set `HTTPS_PROXY`/`HTTP_PROXY` env vars before `npx playwright install`.
+
 ---
 
 ## 12) Roadmap (next)
