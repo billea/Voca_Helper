@@ -84,6 +84,13 @@
       </div>
     </div>
 
+    <!-- App Mode: Vocabulary vs Writing -->
+    <div class="tabs" id="modeTabs">
+      <button class="tab active" data-mode="vocab" id="modeVocab">Vocabulary Helper</button>
+      <button class="tab" data-mode="writing" id="modeWriting">Writing Helper</button>
+    </div>
+    <!-- Wrap existing vocabulary UI so we can toggle visibility cleanly -->
+    <div id="vocabSection">
     <div class="kpi">
       <div class="item" id="kTotalCard" style="cursor:pointer"><div class="v" id="kTotal">0</div><div class="muted small">Total cards</div></div>
       <div class="item" id="kSavedCard" style="cursor:pointer"><div class="v" id="kSaved">0</div><div class="muted small">Saved Words</div></div>
@@ -554,6 +561,88 @@
     <div class="footer">Made with 💙 for learners. Tip: press <b>?</b> for help.</div>
   </div>
 
+    </section>
+
+    </div> <!-- end #vocabSection -->
+
+    <!-- Writing Helper Section (scaffold; integrate draft content) -->
+    <section id="writingSection" style="display:none">
+      <div class="card">
+        <h3>Writing Helper</h3>
+        <p class="muted">Draft, practice, and review writing. This scaffold will host your draft: <em>voca_helper_11_writing_mockups_homepage_lesson</em>.</p>
+      </div>
+
+      <div class="tabs" id="writingTabs">
+        <button class="tab active" data-wtab="home" id="wTabHome">Home</button>
+        <button class="tab" data-wtab="lesson" id="wTabLesson">Lesson</button>
+      </div>
+
+      <section id="wtab-home">
+        <div class="grid">
+          <div class="card">
+            <h4>Quick Start</h4>
+            <p class="muted">Start a new lesson or open a recent draft.</p>
+            <div class="row" style="margin-top:8px">
+              <button class="btn primary" id="startLessonBtn">Start Lesson</button>
+              <button class="btn" id="openRecentBtn">Open Recent</button>
+            </div>
+          </div>
+          <div class="card">
+            <h4>Recent Drafts</h4>
+            <div id="recentDrafts" class="muted small">No drafts yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="wtab-lesson" style="display:none">
+        <div class="grid">
+          <div class="card" style="grid-column:1/-1">
+            <div class="row" style="justify-content:space-between; align-items:center">
+              <div>
+                <h4 style="margin:0">Timer</h4>
+                <div class="muted small">10-minute demo</div>
+              </div>
+              <div class="row" style="gap:8px; align-items:center">
+                <div id="wTimer" style="font-weight:800; font-size:20px">10:00</div>
+                <button class="btn primary" id="wTimerStart">Start</button>
+                <button class="btn" id="wTimerPause">Pause</button>
+                <button class="btn ghost" id="wTimerReset">Reset</button>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="grid-column:1/-1">
+            <label>Prompt or Topic</label>
+            <input id="wPrompt" placeholder="e.g., Describe your favorite place and why it matters." />
+          </div>
+          <div class="card">
+            <label>Your Draft</label>
+            <textarea id="wDraft" placeholder="Write here..." style="min-height:220px"></textarea>
+            <div class="row" style="justify-content:flex-end; margin-top:8px">
+              <button class="btn" id="wClear">Clear</button>
+              <button class="btn primary" id="wSaveDraft">Save Draft</button>
+            </div>
+          </div>
+          <div class="card">
+            <h4>Guidance</h4>
+            <p class="muted">Suggestions about structure, clarity, and vocabulary will appear here.</p>
+            <div id="wGuidance" class="muted small">Type in your draft to see guidance.</div>
+            <div class="hr"></div>
+            <h4 style="margin-top:8px">Hints</h4>
+            <ul id="wHints" class="muted small" style="margin:0; padding-left:18px"></ul>
+          </div>
+          <div class="card">
+            <h4>Self-check</h4>
+            <label class="muted small">Tick as you go</label>
+            <div id="wChecklist" style="display:flex; flex-direction:column; gap:8px; margin-top:8px">
+              <label style="display:flex; gap:8px; align-items:center; cursor:pointer"><input type="checkbox" class="wCheck"> Strong opening sentence</label>
+              <label style="display:flex; gap:8px; align-items:center; cursor:pointer"><input type="checkbox" class="wCheck"> Sensory detail (show, not tell)</label>
+              <label style="display:flex; gap:8px; align-items:center; cursor:pointer"><input type="checkbox" class="wCheck"> Varied sentence lengths</label>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
   <template id="studyBackTpl">
     <div>
       <div class="study-word" style="font-size:clamp(18px,3vw,28px)" id="backDef"></div>
@@ -569,6 +658,145 @@
   <script>
     const $ = sel => document.querySelector(sel);
     const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    // App mode switching: Vocabulary vs Writing
+    const modeKey = 'app_mode_v1';
+    function setMode(mode){
+      const vocab = document.getElementById('vocabSection');
+      const writing = document.getElementById('writingSection');
+      const btnV = document.getElementById('modeVocab');
+      const btnW = document.getElementById('modeWriting');
+      if (!vocab || !writing) return;
+      if (mode === 'writing'){
+        vocab.style.display = 'none';
+        writing.style.display = '';
+        if(btnV && btnW){ btnV.classList.remove('active'); btnW.classList.add('active'); }
+        if (location.hash !== '#writing') location.hash = '#writing';
+      } else {
+        vocab.style.display = '';
+        writing.style.display = 'none';
+        if(btnV && btnW){ btnV.classList.add('active'); btnW.classList.remove('active'); }
+        if (location.hash === '#writing') history.replaceState(null,'', location.pathname + location.search);
+      }
+      try{ localStorage.setItem(modeKey, mode); }catch{}
+    }
+    function initMode(){
+      const saved = (function(){ try{ return localStorage.getItem(modeKey); }catch{return null;} })() || (location.hash === '#writing' ? 'writing' : 'vocab');
+      setMode(saved);
+      const modeTabs = document.getElementById('modeTabs');
+      if (modeTabs){
+        modeTabs.addEventListener('click', (e)=>{
+          const btn = e.target.closest('button.tab');
+          if(!btn) return;
+          const m = btn.getAttribute('data-mode');
+          if(m) setMode(m);
+        });
+      }
+      // Writing helper: tabs
+      const wHome = document.getElementById('wTabHome');
+      const wLesson = document.getElementById('wTabLesson');
+      const secHome = document.getElementById('wtab-home');
+      const secLesson = document.getElementById('wtab-lesson');
+      function setWTab(tab){
+        if(!secHome || !secLesson) return;
+        const isHome = tab === 'home';
+        secHome.style.display = isHome ? '' : 'none';
+        secLesson.style.display = isHome ? 'none' : '';
+        if(wHome && wLesson){
+          wHome.classList.toggle('active', isHome);
+          wLesson.classList.toggle('active', !isHome);
+        }
+      }
+      if(wHome && wLesson){
+        wHome.addEventListener('click', ()=> setWTab('home'));
+        wLesson.addEventListener('click', ()=> setWTab('lesson'));
+      }
+      const startLessonBtn = document.getElementById('startLessonBtn');
+      if (startLessonBtn){ startLessonBtn.addEventListener('click', ()=> setWTab('lesson')); }
+
+      // Writing helper: basic interactions
+      const draftEl = document.getElementById('wDraft');
+      const guidanceEl = document.getElementById('wGuidance');
+      if (draftEl && guidanceEl){
+        draftEl.addEventListener('input', ()=>{
+          const text = draftEl.value || '';
+          const words = (text.trim().match(/\b\w+\b/g) || []).length;
+          const sentences = (text.trim().match(/[.!?]+\s|\n/g) || []).length + (text.trim() ? 1 : 0);
+          guidanceEl.textContent = `${words} words • ${sentences} sentences`;
+          renderHints(text);
+        });
+      }
+      const wClear = document.getElementById('wClear');
+      if (wClear && draftEl){ wClear.addEventListener('click', ()=>{ draftEl.value=''; draftEl.dispatchEvent(new Event('input')); }); }
+      const wSaveDraft = document.getElementById('wSaveDraft');
+      if (wSaveDraft){
+        wSaveDraft.addEventListener('click', ()=>{
+          try{
+            const drafts = JSON.parse(localStorage.getItem('writing_drafts_v1') || '[]');
+            const promptEl = document.getElementById('wPrompt');
+            const prompt = promptEl ? (promptEl.value || '') : '';
+            const content = draftEl ? (draftEl.value || '') : '';
+            const entry = { id: Date.now(), prompt, content, savedAt: new Date().toISOString() };
+            drafts.unshift(entry);
+            localStorage.setItem('writing_drafts_v1', JSON.stringify(drafts.slice(0,20)));
+            if (typeof toast === 'function') toast('Draft saved');
+            renderRecentDrafts();
+          }catch(e){ console.warn('Save draft failed', e); }
+        });
+      }
+      renderRecentDrafts();
+      // Timer controls (10-minute demo)
+      let wTimerRemaining = 10*60; // seconds
+      let wTimerId = null;
+      function refreshTimer(){
+        const el = document.getElementById('wTimer');
+        if(!el) return;
+        const m = String(Math.floor(wTimerRemaining/60)).padStart(2,'0');
+        const s = String(wTimerRemaining%60).padStart(2,'0');
+        el.textContent = `${m}:${s}`;
+      }
+      function tick(){
+        if (wTimerRemaining <= 0){ clearInterval(wTimerId); wTimerId=null; return; }
+        wTimerRemaining -= 1; refreshTimer();
+      }
+      const btnStart = document.getElementById('wTimerStart');
+      const btnPause = document.getElementById('wTimerPause');
+      const btnReset = document.getElementById('wTimerReset');
+      if (btnStart) btnStart.addEventListener('click', ()=>{ if(wTimerId) return; wTimerId = setInterval(tick, 1000); });
+      if (btnPause) btnPause.addEventListener('click', ()=>{ if(wTimerId){ clearInterval(wTimerId); wTimerId=null; } });
+      if (btnReset) btnReset.addEventListener('click', ()=>{ if(wTimerId){ clearInterval(wTimerId); wTimerId=null; } wTimerRemaining = 10*60; refreshTimer(); });
+      refreshTimer();
+
+      function renderHints(text){
+        const list = document.getElementById('wHints');
+        if(!list) return;
+        const hints = [];
+        const longRun = (text.split(/\s+/).filter(Boolean).length) > 120;
+        const repeatedThe = ((text.match(/\bthe\b/gi) || []).length) > 8;
+        if (!/[\.!?]/.test(text)) hints.push('Try finishing some sentences with full stops for control.');
+        if (repeatedThe) hints.push('You use "the" a lot — try varied openers (adverbials, -ing, -ed, dialogue).');
+        if (!/(,|;|:|—|-)/.test(text)) hints.push('Experiment with commas, colons or dashes to vary rhythm.');
+        if (!/(whisper|creak|footsteps|shadow|heartbeat)/i.test(text)) hints.push('Add 1–2 suspense words (e.g., "creak", "shadow", "heartbeat").');
+        if (!/(\bI\b|\bmy\b|\bwe\b|\bour\b)/.test(text) && longRun) hints.push('Zoom in on sensations (what can the narrator hear/feel/see?).');
+        if (!hints.length){ list.innerHTML = '<li>Looking good — keep drafting!</li>'; return; }
+        list.innerHTML = hints.map(h => `<li>${h}</li>`).join('');
+      }
+      function renderRecentDrafts(){
+        const box = document.getElementById('recentDrafts');
+        if(!box) return;
+        let drafts = [];
+        try{ drafts = JSON.parse(localStorage.getItem('writing_drafts_v1') || '[]'); }catch{}
+        if(!drafts.length){ box.textContent = 'No drafts yet.'; return; }
+        box.innerHTML = drafts.slice(0,5).map(d => {
+          const t = new Date(d.savedAt).toLocaleString();
+          const raw = (d.content || '');
+          const snippet = (raw.length > 120 ? raw.slice(0,120) + '…' : raw)
+            .replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+          return `<div style="padding:8px; border-bottom:1px solid var(--muted)"><div style="font-weight:600">${t}</div><div class="muted small">${snippet}</div></div>`;
+        }).join('');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', initMode);
 
     const storeKey = 'vocab_cards_v1';
     const prefKey = 'vocab_prefs_v1';
