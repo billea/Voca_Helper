@@ -431,7 +431,7 @@
     </div>
 
     <section id="tab-import" style="display:none">
-      <div class="card">
+      <div class="card" style="display:none">
         <h3>Import</h3>
         <p class="muted">Upload: <b>JSON</b> (app export) • <b>CSV</b> (flexible headers) • <b>Excel</b> (.xlsx/.xls) • <b>TSV</b> (tab-separated) • <b>PDF</b> (text extraction) • <b>Images</b> (OCR: .jpg/.png/.gif)</p>
         <p class="muted small">Headers auto-detected: Word/Words/words, Definition/meaning/def, Example/Examples/sentence, Synonyms/Synonym/synonym, Antonyms/Antonym/antonym, POS/Word type/type</p>
@@ -567,6 +567,168 @@
 
     <!-- Writing Helper Section (scaffold; integrate draft content) -->
     <section id="writingSection" style="display:none">
+      <style>
+        #writingSection{color:#0f172a}
+        #writingSection .w-muted{color:#64748b}
+        #writingSection .w-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px}
+        #writingSection .w-grid{display:grid;gap:16px}
+        #writingSection .w-hero{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start}
+        #writingSection .w-title{font-size:clamp(26px,4.2vw,44px);font-weight:800;letter-spacing:.2px}
+        #writingSection .w-btn{padding:10px 14px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;color:#0f172a;cursor:pointer;font-weight:600}
+        #writingSection .w-btn.primary{background:#4f46e5;color:#fff;border-color:#4f46e5}
+        #writingSection .w-pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;margin-right:6px}
+        #writingSection .w-prog{height:8px;background:#eef2ff;border-radius:999px;overflow:hidden}
+        #writingSection .w-prog>div{height:100%;background:#4f46e5}
+        #writingSection .w-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+        #writingSection .w-kpis .it{display:flex;flex-direction:column}
+        #writingSection .w-kpis .it .v{font-weight:800}
+        #writingSection .w-subnav{display:flex;justify-content:flex-end}
+        #writingSection .w-subnav .tab{border:1px solid #e5e7eb;color:#111827;background:#ffffff}
+        #writingSection .w-subnav .tab.active{background:#4f46e5;color:#fff;border-color:#4f46e5}
+        #writingSection .w-col2{display:grid;grid-template-columns:1fr 0.9fr;gap:16px}
+        #writingSection .w-breadcrumb{color:#64748b;font-size:12px;margin:8px 0}
+        #writingSection .w-h4{font-size:16px;font-weight:700;margin:0 0 6px 0}
+        #writingSection .w-h3{font-size:20px;font-weight:800;margin:0 0 8px 0}
+        #writingSection .w-chipline{padding:10px;border-radius:10px;background:#f1f5f9;border:1px solid #e5e7eb}
+        #writingSection textarea{min-height:240px}
+        #writingSection .w-rightcol .w-card{padding:16px}
+        #writingSection .w-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+      </style>
+
+      <div class="w-subnav tabs" id="writingTabs">
+        <button class="tab active" data-wtab="home" id="wTabHome">Homepage</button>
+        <button class="tab" data-wtab="lesson" id="wTabLesson">Sample Lesson</button>
+      </div>
+
+      <section id="wtab-home-old" style="display:none">
+        <div class="w-hero">
+          <div>
+            <div class="w-title">Boost Your 11+ Writing — the smart, kid-friendly way</div>
+            <p class="w-muted" style="margin-top:10px">VocaHelper guides 9–11 year olds through short, focused sessions that mirror grammar & independent school exam tasks. Built on SRSD strategies, sentence-combining drills, worked examples, and spaced practice.</p>
+            <div class="row" style="gap:10px; margin-top:14px">
+              <button class="w-btn primary" id="startLessonBtn">Start Free Diagnostic</button>
+              <button class="w-btn" id="openRecentBtn">Preview a Lesson</button>
+            </div>
+            <div style="margin-top:10px">
+              <span class="w-pill">11+ Narrative</span>
+              <span class="w-pill">Descriptive</span>
+              <span class="w-pill">Persuasive</span>
+              <span class="w-pill">Letters</span>
+            </div>
+          </div>
+          <div class="w-card">
+            <div class="w-h3">Today’s Plan</div>
+            <div class="w-muted" style="font-size:13px">Fast, focused practice in under 25 minutes</div>
+            <div style="margin-top:12px">
+              <div class="row" style="justify-content:space-between"><b>Sentence Gym</b><span class="w-muted small">3–5 mins</span></div>
+              <div class="w-prog"><div style="width:22%"></div></div>
+              <div class="row" style="justify-content:space-between; margin-top:10px"><b>Mini-lesson: Suspense Openings</b><span class="w-muted small">5 mins</span></div>
+              <div class="w-prog"><div style="width:0%"></div></div>
+              <div class="row" style="justify-content:space-between; margin-top:10px"><b>Timed Writing</b><span class="w-muted small">10–12 mins</span></div>
+              <div class="w-prog"><div style="width:0%"></div></div>
+              <div class="row" style="justify-content:space-between; margin-top:10px"><b>Self-check & Edit</b><span class="w-muted small">2–3 mins</span></div>
+              <div class="w-prog"><div style="width:0%"></div></div>
+            </div>
+            <div class="w-kpis">
+              <div class="it"><span class="w-muted small">Genres Covered</span><span class="v">2/4</span></div>
+              <div class="it"><span class="w-muted small">Writing Streak</span><span class="v">5 days</span></div>
+              <div class="it"><span class="w-muted small">Focus</span><span class="v">Sentence Variety</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-grid" style="grid-template-columns:repeat(4,1fr); margin-top:16px">
+          <div class="w-card"><div class="w-h3">Start Diagnostic</div><div class="w-muted small">10-minute baseline test to create your plan.</div></div>
+          <div class="w-card"><div class="w-h3">Genre Studios</div><div class="w-muted small">Narrative, Descriptive, Persuasive, Letters.</div></div>
+          <div class="w-card"><div class="w-h3">Sentence Gym</div><div class="w-muted small">Daily 5–10 minute drills for sentence power.</div></div>
+          <div class="w-card"><div class="w-h3">Timed Practice</div><div class="w-muted small">Exam-mode tasks: 10, 20, 30 minutes.</div></div>
+        </div>
+
+        <div class="w-grid" style="grid-template-columns:1fr 1fr 1fr; margin-top:16px">
+          <div class="w-card"><div class="w-muted">“My child finally enjoys writing!”</div><div class="w-muted small" style="margin-top:6px">— Parent, Year 5</div></div>
+          <div class="w-card"><div class="w-muted">“The timed tasks feel just like the real exam.”</div><div class="w-muted small" style="margin-top:6px">— Parent, Year 5</div></div>
+          <div class="w-card"><div class="w-muted">“We love the simple feedback and targets.”</div><div class="w-muted small" style="margin-top:6px">— Parent, Year 5</div></div>
+        </div>
+      </section>
+
+      <section id="wtab-lesson-old" style="display:none">
+        <div class="w-breadcrumb">Home / Genre Studios / <span style="color:#1f2937;font-weight:600">Narrative</span> / Suspense Opening</div>
+        <div class="w-col2">
+          <div>
+            <div class="w-card">
+              <div class="w-h3">Mini-lesson</div>
+              <div class="w-muted" style="margin-top:4px">Watch the model and steal the moves</div>
+              <div class="w-grid" style="grid-template-columns:1fr 1fr; margin-top:12px">
+                <div>
+                  <div class="w-muted small" style="font-weight:700">Strong opening example:</div>
+                  <div class="w-chipline" style="margin-top:6px">The corridor was too quiet. A door clicked. Then— silence. I held my breath and listened: footsteps, somewhere close.</div>
+                  <ul class="w-muted" style="margin-top:8px">
+                    <li>Short sentences quicken pace</li>
+                    <li>Sensory detail (sound: click, footsteps)</li>
+                    <li>Colon for emphasis</li>
+                  </ul>
+                </div>
+                <div>
+                  <div class="w-muted small" style="font-weight:700">Weaker opening (for contrast):</div>
+                  <div class="w-chipline" style="margin-top:6px">The corridor was long and it had many doors and I was walking and it was dark and scary and I felt worried.</div>
+                  <ul class="w-muted" style="margin-top:8px">
+                    <li>Run-on sentence → hard to feel tension</li>
+                    <li>Vague adjectives (dark, scary)</li>
+                    <li>No specific detail or rhythm changes</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-card" style="margin-top:16px">
+              <div class="w-h3">Your prompt</div>
+              <div class="w-muted">Write a tense opening (8–12 sentences)</div>
+              <div class="w-chipline" style="margin-top:10px">It is late. A strange noise wakes you. You step onto the landing and the house feels different tonight…</div>
+              <label class="w-muted small" style="display:block; margin:10px 0 6px">Start your opening here…</label>
+              <textarea id="wDraft" placeholder="Type your opening..." ></textarea>
+              <div class="w-actions">
+                <button class="w-btn" id="wClear">Clear</button>
+                <button class="w-btn primary" id="wSaveDraft">Save Draft</button>
+              </div>
+              <div class="w-muted small" id="wGuidance" style="margin-top:8px">Type in your draft to see guidance.</div>
+              <div class="hr"></div>
+              <div class="w-h4">Instant Hints</div>
+              <ul id="wHints" class="w-muted" style="margin:6px 0 0 18px"></ul>
+            </div>
+          </div>
+          <div class="w-rightcol">
+            <div class="w-card">
+              <div class="w-h3">Timer</div>
+              <div class="w-muted small">10 min</div>
+              <div class="row" style="gap:8px; align-items:center; margin-top:6px">
+                <div id="wTimer" style="font-weight:800; font-size:22px">10:00</div>
+                <button class="w-btn primary" id="wTimerStart">Start</button>
+                <button class="w-btn" id="wTimerPause">Pause</button>
+                <button class="w-btn" id="wTimerReset">Reset</button>
+              </div>
+            </div>
+            <div class="w-card" style="margin-top:16px">
+              <div class="w-h3">Checklist</div>
+              <div class="w-muted small">Tick as you write (SRSD)</div>
+              <div id="wChecklist" style="display:flex; flex-direction:column; gap:8px; margin-top:8px">
+                <label style="display:flex; gap:8px; align-items:center; cursor:pointer"><input type="checkbox" class="wCheck"> Used at least 2 short sentences for tension</label>
+                <label style="display:flex; gap:8px; align-items:center; cursor:pointer"><input type="checkbox" class="wCheck"> Added sensory detail (sound/feel/sight)</label>
+                <label style="display:flex; gap:8px; align-items:center; cursor:pointer"><input type="checkbox" class="wCheck"> Ended with a hook (question/ellipsis/cliffhanger)</label>
+              </div>
+            </div>
+            <div class="w-card" style="margin-top:16px">
+              <div class="w-h3">Success Criteria</div>
+              <div class="w-muted small">What examiners want to see</div>
+              <ul class="w-muted" style="margin-top:8px">
+                <li>Clear control of sentence length and punctuation</li>
+                <li>Precise vocabulary (avoid vague fillers)</li>
+                <li>Cohesion across sentences (pronouns, connectives)</li>
+                <li>Audience & purpose awareness (tone fits suspense)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
       <div class="card">
         <h3>Writing Helper</h3>
         <p class="muted">Draft, practice, and review writing. This scaffold will host your draft: <em>voca_helper_11_writing_mockups_homepage_lesson</em>.</p>
