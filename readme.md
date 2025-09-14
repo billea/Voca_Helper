@@ -279,7 +279,7 @@ reluctant,not wanting to do something,He was reluctant to try the spicy kimchi.,
 2. Netlify → Deploys → Drag & drop `index.html`.  
 3. Share the URL; optional custom domain.
 
-### Appendix C — Firestore rules (example)
+### Appendix C – Firestore rules (example)
 ```
 rules_version = '2';
 service cloud.firestore {
@@ -290,3 +290,12 @@ service cloud.firestore {
   }
 }
 ```
+
+---
+
+## Updates
+- v1.1.0: Added Writing Helper mode (toggle under the header). Includes Home/Lesson tabs, a 10-minute timer, live word/sentence guidance with hints, a self-checklist, and draft saving to `localStorage`.
+
+## Releases
+- Latest tagged release: https://github.com/billea/Voca_Helper/releases/tag/v1.1.0
+- To publish a new release: GitHub → Releases → “Draft a new release” → choose a tag → add notes → Publish.
