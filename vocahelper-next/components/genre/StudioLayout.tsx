@@ -1,5 +1,6 @@
 "use client";
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { Timer } from '@/components/ui/Timer';
@@ -54,6 +55,7 @@ export function StudioLayout(props: StudioProps) {
   const [checked, setChecked] = React.useState<Record<number, boolean>>({});
   const [customChecklist, setCustomChecklist] = React.useState<string[]>([]);
   const toast = useToast();
+  const router = useRouter();
   const words = (draft.trim().match(/\b\w+\b/g) || []).length;
   const canSubmit = words >= 120 && words <= 400; // client guard
 
@@ -97,6 +99,9 @@ export function StudioLayout(props: StudioProps) {
     const res = await fetch('/api/submissions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await res.json();
     toast.show('Submission sent', { type: 'success' });
+    if (data?.nextStepTarget) {
+      router.push(String(data.nextStepTarget));
+    }
   }
 
   return (

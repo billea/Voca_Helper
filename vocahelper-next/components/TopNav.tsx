@@ -17,6 +17,7 @@ export function TopNav() {
     { href: "/practice", label: "Practice" },
     { href: "/feedback", label: "Feedback" },
     { href: "/parent", label: "Parent" },
+    { href: "/drafts", label: "Drafts" },
   ];
 
   return (
@@ -50,4 +51,3 @@ export function TopNav() {
     </header>
   );
 }
-
