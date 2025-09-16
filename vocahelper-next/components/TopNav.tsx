@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AuthBar } from "@/components/auth/AuthBar";
 
 /**
  * TopNav renders the main application navigation with accessible links.
@@ -47,6 +48,7 @@ export function TopNav() {
             );
           })}
         </ul>
+        <AuthBar />
       </nav>
     </header>
   );

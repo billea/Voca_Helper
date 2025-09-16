@@ -1,40 +1,40 @@
-import { getAll } from '@/lib/devStore';
-import { getSupabase } from '@/lib/supabase';
+"use client";
+import React from 'react';
 import Link from 'next/link';
+import { getSupabase } from '@/lib/supabase';
 
-export const dynamic = 'force-dynamic';
+export default function DraftsPage() {
+  const [drafts, setDrafts] = React.useState<any[]>([]);
+  const [submissions, setSubmissions] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-export default async function DraftsPage() {
-  const sb = getSupabase();
-  let drafts: any[] = [];
-  let submissions: any[] = [];
-  if (sb) {
-    const { data: d } = await sb.from('drafts').select('*').order('created_at', { ascending: false });
-    const { data: s } = await sb.from('submissions').select('*').order('created_at', { ascending: false });
-    drafts = d || [];
-    submissions = s || [];
-  } else {
-    const data = await getAll();
-    drafts = data.drafts.map((x) => ({
-      ...x,
-      created_at: x.createdAt,
-      word_count: x.wordCount,
-      duration_sec: x.durationSec,
-    }));
-    submissions = data.submissions.map((x) => ({
-      ...x,
-      created_at: x.createdAt,
-      word_count: x.wordCount,
-      duration_sec: x.durationSec,
-      next_step_target: x.nextStepTarget,
-    }));
-  }
+  React.useEffect(() => {
+    const sb = getSupabase();
+    async function load() {
+      if (sb) {
+        const { data: d } = await sb.from('drafts').select('*').order('created_at', { ascending: false });
+        const { data: s } = await sb.from('submissions').select('*').order('created_at', { ascending: false });
+        setDrafts(d || []);
+        setSubmissions(s || []);
+      } else {
+        const res = await fetch('/api/dev/data');
+        const data = await res.json();
+        setDrafts((data.drafts || []).map((x: any) => ({ ...x, created_at: x.createdAt, word_count: x.wordCount, duration_sec: x.durationSec })));
+        setSubmissions((data.submissions || []).map((x: any) => ({ ...x, created_at: x.createdAt, word_count: x.wordCount, duration_sec: x.durationSec, next_step_target: x.nextStepTarget })));
+      }
+      setLoading(false);
+    }
+    load();
+  }, []);
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-extrabold">My Drafts</h1>
       <section aria-labelledby="drafts-title" className="space-y-2">
         <h2 id="drafts-title" className="text-lg font-bold">Saved drafts</h2>
-        {drafts.length === 0 ? (
+        {loading ? (
+          <p className="text-sm text-slate-600">Loading…</p>
+        ) : drafts.length === 0 ? (
           <p className="text-sm text-slate-600">No drafts yet. Visit a lesson to write and save.</p>
         ) : (
           <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200">
@@ -57,7 +57,9 @@ export default async function DraftsPage() {
 
       <section aria-labelledby="subs-title" className="space-y-2">
         <h2 id="subs-title" className="text-lg font-bold">Submissions</h2>
-        {submissions.length === 0 ? (
+        {loading ? (
+          <p className="text-sm text-slate-600">Loading…</p>
+        ) : submissions.length === 0 ? (
           <p className="text-sm text-slate-600">No submissions yet.</p>
         ) : (
           <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200">

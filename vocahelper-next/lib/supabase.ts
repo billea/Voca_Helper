@@ -9,6 +9,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export function getSupabase() {
   if (!supabaseUrl || !supabaseAnonKey) return null;
-  return createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: false } });
+  return createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: true, autoRefreshToken: true } });
 }
 
+export function getSupabaseWithToken(token?: string | null) {
+  if (!supabaseUrl || !supabaseAnonKey) return null;
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return createClient(supabaseUrl, supabaseAnonKey, { global: { headers }, auth: { persistSession: false } });
+}

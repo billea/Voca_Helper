@@ -120,14 +120,28 @@ export function StudioLayout(props: StudioProps) {
 
   async function saveDraft() {
     const payload = { genre, lesson, content: draft, wordCount: words, durationSec };
-    const res = await fetch('/api/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    let authHeader: Record<string, string> = { 'Content-Type': 'application/json' };
+    const sb = (await import('@/lib/supabase')).getSupabase();
+    if (sb) {
+      const { data } = await sb.auth.getSession();
+      const token = data.session?.access_token;
+      if (token) authHeader = { ...authHeader, Authorization: `Bearer ${token}` };
+    }
+    const res = await fetch('/api/drafts', { method: 'POST', headers: authHeader, body: JSON.stringify(payload) });
     const data = await res.json();
     toast.show('Draft saved', { type: 'success' });
   }
   async function submitDraft() {
     if (!canSubmit) return;
     const payload = { genre, lesson, content: draft, wordCount: words, durationSec };
-    const res = await fetch('/api/submissions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    let authHeader: Record<string, string> = { 'Content-Type': 'application/json' };
+    const sb = (await import('@/lib/supabase')).getSupabase();
+    if (sb) {
+      const { data } = await sb.auth.getSession();
+      const token = data.session?.access_token;
+      if (token) authHeader = { ...authHeader, Authorization: `Bearer ${token}` };
+    }
+    const res = await fetch('/api/submissions', { method: 'POST', headers: authHeader, body: JSON.stringify(payload) });
     const data = await res.json();
     toast.show('Submission sent', { type: 'success' });
     if (data?.nextStepTarget) {
