@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+:root {
+  --ring: theme(colors.brand.DEFAULT);
+}
+
+html:focus-within {
+  scroll-behavior: smooth;
+}
+
+/* Focus ring */
+.focus-ring:focus-visible {
+  @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-white;
+}
+
+/* Skip link */
+.skip-link {
+  @apply sr-only focus:not-sr-only fixed top-2 left-2 z-50 px-3 py-2 rounded-md bg-brand text-white;
+}
+
+/* Prose helpers */
+.eyebrow {
+  @apply text-xs font-semibold uppercase tracking-wider text-slate-500;
+}
+
