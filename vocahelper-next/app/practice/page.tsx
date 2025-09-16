@@ -41,6 +41,21 @@ export default function PracticePage() {
 
   function startSession(){ setOpen(true); }
 
+  // Resume last session helper
+  function resumeCandidate(){
+    try{
+      const keys = Object.keys(localStorage).filter(k => k.startsWith('vocahelper:practice:'));
+      let best: any = null; let bestKey='';
+      for(const k of keys){ const v = JSON.parse(localStorage.getItem(k) || 'null'); if(v && (!best || (v.updatedAt||0) > (best.updatedAt||0))){ best=v; bestKey=k; } }
+      if(best){ return { key: bestKey, data: best }; }
+    }catch{}
+    return null;
+  }
+  function onResume(){
+    const cand = resumeCandidate(); if(!cand) return;
+    const { data } = cand; setMode(data.mode); setGenre(data.genre); setPrompt(data.prompt); setContent(data.content||''); setOpen(true); setStarted(false); setId(cand.key.split(':').pop()||('prac_'+Date.now().toString(36)));
+  }
+
   async function submit(improved=false){
     const res = await fetch('/api/practice/submission', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ mode, genre, prompt, content, improved, durationSec: DUR[mode]*60 - remaining }) });
     const data = await res.json();
@@ -78,6 +93,7 @@ export default function PracticePage() {
           </div>
           <div className="flex items-end gap-2">
             <button className="focus-ring rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white" onClick={startSession}>Start</button>
+            <button className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm" onClick={onResume}>Resume last</button>
           </div>
         </div>
       </Card>
@@ -121,12 +137,7 @@ export default function PracticePage() {
                 }} />
               </div>
             </div>
-            <textarea
-              value={content}
-              onChange={(e)=> setContent(e.target.value)}
-              className={`mt-3 h-[60vh] w-full rounded-md border border-slate-300 p-3 text-sm focus-ring ${monospace? 'font-mono leading-7' : 'leading-7'}`}
-              placeholder="Start writing…"
-            />
+            <NotesEditor content={content} setContent={setContent} monospace={monospace} />
             <div className="mt-2 flex justify-end gap-2">
               <button className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm" onClick={()=> setOpen(false)} aria-label="Close">Close</button>
               <button className="focus-ring rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white" onClick={()=> submit(false)}>Submit</button>
@@ -134,6 +145,28 @@ export default function PracticePage() {
             <div className="sr-only" aria-live="polite" ref={liveRef} />
           </div>
         </FullScreenDialog>
+      )}
+    </div>
+  );
+}
+
+function NotesEditor({ content, setContent, monospace }:{ content:string; setContent:(v:string)=>void; monospace:boolean }){
+  const [showNotes, setShowNotes] = React.useState(false);
+  const [notes, setNotes] = React.useState('');
+  React.useEffect(()=>{ try{ const saved = sessionStorage.getItem('vh_practice_notes'); if(saved) setNotes(saved); }catch{} },[]);
+  React.useEffect(()=>{ try{ sessionStorage.setItem('vh_practice_notes', notes); }catch{} },[notes]);
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={showNotes} onChange={(e)=> setShowNotes(e.target.checked)} /> Show Notes panel</label>
+      </div>
+      {showNotes ? (
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <textarea value={content} onChange={(e)=> setContent(e.target.value)} className={`h-[60vh] w-full rounded-md border border-slate-300 p-3 text-sm focus-ring ${monospace? 'font-mono leading-7' : 'leading-7'}`} placeholder="Start writing…" />
+          <textarea value={notes} onChange={(e)=> setNotes(e.target.value)} className={`h-[60vh] w-full rounded-md border border-slate-300 p-3 text-sm focus-ring ${monospace? 'font-mono leading-7' : 'leading-7'}`} placeholder="Notes…" />
+        </div>
+      ) : (
+        <textarea value={content} onChange={(e)=> setContent(e.target.value)} className={`mt-3 h-[60vh] w-full rounded-md border border-slate-300 p-3 text-sm focus-ring ${monospace? 'font-mono leading-7' : 'leading-7'}`} placeholder="Start writing…" />
       )}
     </div>
   );
@@ -172,4 +205,3 @@ function FullScreenDialog({ children, onClose, onKeyDown, ariaLabel }:{ children
     </div>
   );
 }
-
