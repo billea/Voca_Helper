@@ -22,15 +22,26 @@ export type StudioProps = {
 /** Compute quick hints from the draft string. */
 function computeHints(text: string): string[] {
   const hints: string[] = [];
-  const words = (text.trim().match(/\b\w+\b/g) || []).length;
-  const sentences = (text.trim().match(/[.!?]+\s|\n/g) || []).length + (text.trim() ? 1 : 0);
-  const shortSentences = (text.match(/(^|[.!?]\s+)([^.!?]{0,25})/g) || []).length; // rough
-  const hasSensory = /(whisper|creak|footsteps|shadow|scent|cold|glow)/i.test(text);
-  const punctVar = /[,;:—–]/.test(text);
-  if (shortSentences < Math.max(1, Math.round(sentences * 0.25))) hints.push('Try 1–2 short sentences for control.');
-  if (!hasSensory) hints.push('Add a sensory detail (sound/sight/feel).');
-  if (!punctVar) hints.push('Vary punctuation: comma, dash, or colon.');
+  const trimmed = text.trim();
+  const words = (trimmed.match(/\b\w+\b/g) || []).length;
+  const sentences = (trimmed.match(/[.!?]+\s|\n/g) || []).length + (trimmed ? 1 : 0);
+
+  // Heuristic: many 'The ' sentence starters
+  const theStarters = (trimmed.match(/(?:^|[.!?]\s+)The\s+/g) || []).length;
+  if (theStarters >= 3) hints.push('Try varied openers (‑ing/‑ed/adverbial/dialogue).');
+
+  // Punctuation variety
+  if (!/[,:;—–]/.test(trimmed)) hints.push('Add punctuation variety (comma/colon/dash).');
+
+  // Suspense lexicon
+  if (!/(creak|shadow|footsteps|heartbeat)/i.test(trimmed)) hints.push('Add 1–2 suspense words (e.g., “creak”, “shadow”, “footsteps”).');
+
+  // Sentence ending punctuation
+  if (!/[.!?]/.test(trimmed)) hints.push('Add full stops to control meaning.');
+
+  // Basic development guard
   if (words < 120) hints.push('Develop ideas: aim for 120–400 words.');
+
   return hints;
 }
 

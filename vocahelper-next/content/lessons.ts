@@ -21,32 +21,33 @@ export const LESSON_REGISTRY: Registry = {
     suspense: {
       genre: 'narrative',
       lesson: 'suspense',
-      title: 'Narrative — Suspense Opening',
-      prompt: 'Write the opening of a story where a character hears a strange noise at night.',
+      title: 'Suspense Writing — Opening a Story',
+      prompt:
+        'It is late. A strange noise wakes you. You step onto the landing and the house feels different tonight…',
       strongExample:
-        'The corridor held its breath. A click from the landing. Then—silence. I pressed my ear to the door: footsteps, close.',
+        'The corridor holds its breath. A click from the landing. Then—silence. I press my ear to the wood: footsteps, close.',
       strongPoints: [
+        'Specific sound imagery (click, footsteps)',
         'Short sentences to build tension',
-        'Specific sensory detail (sound)',
-        'Colon and dash for control',
+        'Dash/colon for emphasis and control',
       ],
       weakExample:
-        'It was dark and scary and I was walking down the corridor and there were many doors and I felt worried.',
+        'It was dark and scary and I was walking down a long corridor and there were many doors and I was very worried and nervous.',
       weakPoints: [
-        'Run-on sentence — weak control',
-        'Vague adjectives (dark, scary)',
-        'No rhythm change for emphasis',
+        'Run‑on sentence — weak control',
+        'Vague adjectives (dark, scary, worried)',
+        'No precise images or rhythm change',
       ],
       checklist: [
-        'Used at least two short sentences',
-        'Added a sensory detail (sound/sight/feel)',
-        'Ended with a hook (question/ellipsis/shift)',
+        'At least 2 short sentences for tension',
+        'Sensory detail (sound/feel/sight)',
+        'End with hook (question/ellipsis/cliffhanger)',
       ],
       criteria: [
-        'Sentence variety and control',
-        'Precise vocabulary',
+        'Control of sentence length & punctuation',
+        'Precise vocabulary; avoid vague fillers',
         'Cohesion across sentences',
-        'Audience and purpose awareness',
+        'Tone fits suspense',
       ],
     },
   },
@@ -124,4 +125,3 @@ export function getLesson(genre: string, lesson: string): LessonContent {
   // fallback to narrative/suspense
   return LESSON_REGISTRY.narrative.suspense;
 }
-
