@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Card } from '@/components/ui/Card';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { Timer } from '@/components/ui/Timer';
+import { useToast } from '@/components/ui/Toast';
 
 export type StudioProps = {
   breadcrumb: string[]; // [Home, Genre Studios, Genre, Lesson]
@@ -40,6 +41,8 @@ export function StudioLayout(props: StudioProps) {
   const [remaining, setRemaining] = React.useState(minutes * 60);
   const [draft, setDraft] = React.useState('');
   const [checked, setChecked] = React.useState<Record<number, boolean>>({});
+  const [customChecklist, setCustomChecklist] = React.useState<string[]>([]);
+  const toast = useToast();
   const words = (draft.trim().match(/\b\w+\b/g) || []).length;
   const canSubmit = words >= 120 && words <= 400; // client guard
 
@@ -50,18 +53,39 @@ export function StudioLayout(props: StudioProps) {
 
   const durationSec = minutes * 60 - remaining;
 
+  // Load/save draft from localStorage per-lesson
+  const storageKey = `vh_draft_${genre}_${lesson}`;
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) setDraft(raw);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  React.useEffect(() => {
+    try { localStorage.setItem(storageKey, draft); } catch {}
+  }, [draft, storageKey]);
+
+  // load custom checklist
+  const ckKey = `vh_ck_${genre}_${lesson}`;
+  React.useEffect(() => {
+    try{ const raw = localStorage.getItem(ckKey); if(raw) setCustomChecklist(JSON.parse(raw)); }catch{}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  React.useEffect(()=>{ try{ localStorage.setItem(ckKey, JSON.stringify(customChecklist)); }catch{} },[customChecklist, ckKey]);
+
   async function saveDraft() {
     const payload = { genre, lesson, content: draft, wordCount: words, durationSec };
     const res = await fetch('/api/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await res.json();
-    alert(`Draft saved (id: ${data.id})`);
+    toast.show('Draft saved', { type: 'success' });
   }
   async function submitDraft() {
     if (!canSubmit) return;
     const payload = { genre, lesson, content: draft, wordCount: words, durationSec };
     const res = await fetch('/api/submissions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await res.json();
-    alert(`Submitted (id: ${data.id}) → Next: ${data.nextStepTarget}`);
+    toast.show('Submission sent', { type: 'success' });
   }
 
   return (
@@ -143,7 +167,7 @@ export function StudioLayout(props: StudioProps) {
         <aside className="space-y-4">
           <Card title="SRSD Checklist">
             <ul className="space-y-2">
-              {checklist.map((item, idx) => {
+              {[...checklist, ...customChecklist].map((item, idx) => {
                 const id = `ck-${idx}`;
                 const on = !!checked[idx];
                 return (
@@ -162,6 +186,23 @@ export function StudioLayout(props: StudioProps) {
                 );
               })}
             </ul>
+            <div className="mt-3 flex gap-2">
+              <input
+                type="text"
+                aria-label="Add checklist item"
+                placeholder="Add checklist item"
+                className="min-w-0 flex-1 rounded-md border border-slate-300 px-2 py-2 text-sm focus-ring"
+                onKeyDown={(e) => {
+                  const target = e.target as HTMLInputElement;
+                  if (e.key === 'Enter' && target.value.trim()) {
+                    const v = target.value.trim();
+                    setCustomChecklist((arr)=> [...arr, v]);
+                    target.value = '';
+                    toast.show('Checklist item added', { type: 'info' });
+                  }
+                }}
+              />
+            </div>
           </Card>
 
           <Card title="Instant Hints">
@@ -184,4 +225,3 @@ export function StudioLayout(props: StudioProps) {
     </div>
   );
 }
-
