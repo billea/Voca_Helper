@@ -60,6 +60,45 @@ create policy "drafts select own" on public.drafts for select to authenticated u
 
 create policy "subs insert own" on public.submissions for insert to authenticated with check (auth.uid() = user_id);
 create policy "subs select own" on public.submissions for select to authenticated using (auth.uid() = user_id);
+
+### 2.1 Gym sessions
+
+```sql
+create table if not exists public.gym_sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid(),
+  type text not null,                    -- 'combining'|'openers'|'punctuation'|'vocab'
+  items_attempted int not null,
+  items_completed int not null,
+  duration_sec int not null,
+  created_at timestamp with time zone default now(),
+  constraint fk_user_gym foreign key (user_id) references auth.users (id) on delete cascade
+);
+alter table public.gym_sessions enable row level security;
+create policy "gym insert own" on public.gym_sessions for insert to authenticated with check (auth.uid() = user_id);
+create policy "gym select own" on public.gym_sessions for select to authenticated using (auth.uid() = user_id);
+```
+
+### 2.2 Practice submissions
+
+```sql
+create table if not exists public.practice_submissions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid(),
+  mode text not null,                    -- 'quick'|'standard'|'full'
+  genre text not null,                   -- 'narrative'|'descriptive'|'persuasive'|'letters'
+  prompt text not null,
+  content text not null,
+  improved boolean not null default false,
+  duration_sec int not null,
+  next_step_target text,
+  created_at timestamp with time zone default now(),
+  constraint fk_user_practice foreign key (user_id) references auth.users (id) on delete cascade
+);
+alter table public.practice_submissions enable row level security;
+create policy "practice insert own" on public.practice_submissions for insert to authenticated with check (auth.uid() = user_id);
+create policy "practice select own" on public.practice_submissions for select to authenticated using (auth.uid() = user_id);
+```
 ```
 
 > Production: scope access by `auth.uid()` and store a `user_id uuid` column to enforce per‑user isolation.
@@ -86,3 +125,5 @@ npm run dev
 Visit:
 - `/genres/narrative/suspense` → write → Save Draft / Submit
 - `/drafts` → see records from Supabase
+- `/sentence-gym` → complete a short session, then POSTed to `gym_sessions`
+- `/practice` → run a timed session and submit → `practice_submissions`
