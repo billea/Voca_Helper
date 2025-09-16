@@ -57,7 +57,7 @@ export function StudioLayout(props: StudioProps) {
   const toast = useToast();
   const router = useRouter();
   const [isSavingLocal, setIsSavingLocal] = React.useState(false);
-  const [savedLocalAt, setSavedLocalAt] = React.useState<string | null>(null);
+  const lastToastAtRef = React.useRef<number>(0);
   const words = (draft.trim().match(/\b\w+\b/g) || []).length;
   const canSubmit = words >= 120 && words <= 400; // client guard
 
@@ -83,18 +83,29 @@ export function StudioLayout(props: StudioProps) {
       try {
         setIsSavingLocal(true);
         localStorage.setItem(storageKey, draft);
-        const ts = new Date().toISOString();
-        localStorage.setItem(storageKey + ':savedAt', ts);
-        setSavedLocalAt(ts);
+        const now = Date.now();
+        // throttle autosaved toast to at most once every 20s
+        if (now - lastToastAtRef.current > 20000) {
+          toast.show('Autosaved', { type: 'info' });
+          lastToastAtRef.current = now;
+        }
       } catch {}
       setIsSavingLocal(false);
     }, 800);
     return () => clearTimeout(handle);
-  }, [draft, storageKey]);
+  }, [draft, storageKey, toast]);
   React.useEffect(() => {
+    // Offer recovery on mount if draft exists and local editor is empty
     try {
-      const ts = localStorage.getItem(storageKey + ':savedAt');
-      if (ts) setSavedLocalAt(ts);
+      const raw = localStorage.getItem(storageKey);
+      if (!draft && raw && raw.length > 0) {
+        // Simple confirm for recovery
+        const ok = window.confirm('Recover locally saved draft for this lesson?');
+        if (ok) {
+          setDraft(raw);
+          toast.show('Recovered local draft', { type: 'success' });
+        }
+      }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -197,9 +208,7 @@ export function StudioLayout(props: StudioProps) {
             </div>
             <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
               <span>Submit requires 120–400 words.</span>
-              <span className="ml-auto">
-                {isSavingLocal ? 'Saving…' : savedLocalAt ? `Saved locally at ${new Date(savedLocalAt).toLocaleTimeString()}` : ''}
-              </span>
+              <span className="ml-auto">{isSavingLocal ? 'Saving…' : ''}</span>
             </div>
           </Card>
         </div>

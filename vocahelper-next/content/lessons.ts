@@ -50,6 +50,18 @@ export const LESSON_REGISTRY: Registry = {
         'Tone fits suspense',
       ],
     },
+    adventure: {
+      genre: 'narrative',
+      lesson: 'adventure',
+      title: 'Narrative — Chase Scene',
+      prompt: 'Write a chase scene through a busy market. Keep the pace high and the actions clear.',
+      strongExample: 'Stalls blur. Boots slap stone. A shout behind me. I vault a crate—spices burst into the air.',
+      strongPoints: ['Strong verbs and rapid actions', 'Short sentences to speed pace', 'Concrete sensory cues'],
+      weakExample: 'I was running very fast and there were a lot of things happening and it was really chaotic and I felt nervous.',
+      weakPoints: ['Vague adverbs (“very”, “really”)', 'Telling instead of showing', 'No concrete action details'],
+      checklist: ['Use precise action verbs', 'Include 1–2 short sentences', 'Make obstacles clear'],
+      criteria: ['Clear action flow', 'Specific detail', 'Varied sentence length'],
+    },
   },
   descriptive: {
     setting: {
@@ -115,6 +127,18 @@ export const LESSON_REGISTRY: Registry = {
         'Evidence and examples',
         'Formal register and structure',
       ],
+    },
+    speech: {
+      genre: 'persuasive',
+      lesson: 'speech',
+      title: 'Persuasive — School Assembly Speech',
+      prompt: 'Write a short speech persuading students to join a kindness campaign.',
+      strongExample: 'This week, one choice can change someone’s day. Join us. Five minutes, one act, every morning—start with your form.',
+      strongPoints: ['Clear call to action', 'Concise sentences for impact', 'Direct address to audience'],
+      weakExample: 'We should all be kind because kindness is good and people like it and it would make things nice for everyone.',
+      weakPoints: ['Repetitive and vague', 'No plan or specifics', 'Weak close'],
+      checklist: ['State purpose early', 'Give two concrete actions', 'End with a memorable line'],
+      criteria: ['Audience engagement', 'Specific, actionable steps', 'Rhetorical impact'],
     },
   },
 };
