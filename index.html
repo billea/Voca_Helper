@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -578,7 +578,16 @@
         #writingSection .w-btn.primary{background:#4f46e5;color:#fff;border-color:#4f46e5}
         #writingSection .w-pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;margin-right:6px}
         #writingSection .w-prog{height:8px;background:#eef2ff;border-radius:999px;overflow:hidden}
-        #writingSection .w-prog>div{height:100%;background:#4f46e5}
+        #writingSection .w-prog>div{height:100%;background:#4f46e5;transition:width .35s ease}
+        #writingSection .w-plan-item{margin-top:10px}
+        #writingSection .w-plan-meta{display:flex;justify-content:space-between;align-items:center}
+        #writingSection .w-plan-label{display:inline-flex;align-items:center;gap:8px}
+        #writingSection .w-status{width:18px;height:18px;border-radius:50%;border:2px solid #cbd5e1;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:#fff}
+        #writingSection .w-plan-item.completed .w-status{background:#22c55e;border-color:#22c55e}
+        #writingSection .w-plan-item.completed b{color:#475569}
+        #writingSection .w-plan-item.completed .w-perc{color:#94a3b8}
+        #writingSection .w-plan-item.completed .w-prog{opacity:.5}
+        #writingSection .w-perc{color:#64748b;font-size:12px}
         #writingSection .w-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
         #writingSection .w-kpis .it{display:flex;flex-direction:column}
         #writingSection .w-kpis .it .v{font-weight:800}
@@ -593,14 +602,35 @@
         #writingSection textarea{min-height:240px}
         #writingSection .w-rightcol .w-card{padding:16px}
         #writingSection .w-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+        /* light wrapper + brand header */
+        #writingSection .w-wrap{background:#f8fafc;border:1px solid #e5e7eb;border-radius:20px;padding:16px}
+        #writingSection .w-brand{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+        #writingSection .w-logo{width:36px;height:36px;border-radius:8px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+        #writingSection .w-brand-title{font-weight:800}
+        #writingSection .w-brand-sub{font-size:12px;color:#64748b;margin-top:-2px}
+        #writingSection .w-subnav{display:flex;justify-content:flex-end;margin-top:6px}
+        #writingSection .w-subnav .tab{border:1px solid #e5e7eb;color:#111827;background:#ffffff;border-radius:999px;padding:10px 14px}
+        #writingSection .w-subnav .tab.active{background:#4f46e5;color:#fff;border-color:#4f46e5;box-shadow:0 6px 14px rgba(79,70,229,0.25)}
+        @media (max-width: 860px){
+          #writingSection .w-hero{grid-template-columns:1fr}
+        }
       </style>
+
+      <div class="w-wrap">
+        <div class="w-brand">
+          <div class="w-logo">V</div>
+          <div>
+            <div class="w-brand-title">VocaHelper</div>
+            <div class="w-brand-sub">11+ Writing</div>
+          </div>
+        </div>
 
       <div class="w-subnav tabs" id="writingTabs">
         <button class="tab active" data-wtab="home" id="wTabHome">Homepage</button>
         <button class="tab" data-wtab="lesson" id="wTabLesson">Sample Lesson</button>
       </div>
 
-      <section id="wtab-home-old" style="display:none">
+      <section id="wtab-home">
         <div class="w-hero">
           <div>
             <div class="w-title">Boost Your 11+ Writing — the smart, kid-friendly way</div>
@@ -616,31 +646,28 @@
               <span class="w-pill">Letters</span>
             </div>
           </div>
-          <div class="w-card">
-            <div class="w-h3">Today’s Plan</div>
-            <div class="w-muted" style="font-size:13px">Fast, focused practice in under 25 minutes</div>
-            <div style="margin-top:12px">
-              <div class="row" style="justify-content:space-between"><b>Sentence Gym</b><span class="w-muted small">3–5 mins</span></div>
-              <div class="w-prog"><div style="width:22%"></div></div>
-              <div class="row" style="justify-content:space-between; margin-top:10px"><b>Mini-lesson: Suspense Openings</b><span class="w-muted small">5 mins</span></div>
-              <div class="w-prog"><div style="width:0%"></div></div>
-              <div class="row" style="justify-content:space-between; margin-top:10px"><b>Timed Writing</b><span class="w-muted small">10–12 mins</span></div>
-              <div class="w-prog"><div style="width:0%"></div></div>
-              <div class="row" style="justify-content:space-between; margin-top:10px"><b>Self-check & Edit</b><span class="w-muted small">2–3 mins</span></div>
-              <div class="w-prog"><div style="width:0%"></div></div>
-            </div>
-            <div class="w-kpis">
-              <div class="it"><span class="w-muted small">Genres Covered</span><span class="v">2/4</span></div>
-              <div class="it"><span class="w-muted small">Writing Streak</span><span class="v">5 days</span></div>
-              <div class="it"><span class="w-muted small">Focus</span><span class="v">Sentence Variety</span></div>
+            <div class="w-card">
+            <div class="row" style="justify-content:space-between;align-items:center">
+                <div class="w-h3">Today’s Plan</div>
+                <div class="row" style="gap:6px">
+                  <button class="w-btn" id="wPlanCompleteAll" style="padding:6px 10px;font-size:12px;border-radius:999px">Complete all</button>
+                  <button class="w-btn" id="wPlanReset" style="padding:6px 10px;font-size:12px;border-radius:999px">Reset</button>
+                </div>
+              </div>
+              <div class="w-muted" style="font-size:13px">Fast, focused practice in under 25 minutes</div>
+              <div id="wPlan" style="margin-top:12px"></div>
+              <div class="w-kpis">
+                <div class="it"><span class="w-muted small">Genres Covered</span><span class="v">2/4</span></div>
+                <div class="it"><span class="w-muted small">Writing Streak</span><span class="v">5 days</span></div>
+                <div class="it"><span class="w-muted small">Focus</span><span class="v">Sentence Variety</span></div>
+              </div>
             </div>
           </div>
-        </div>
 
         <div class="w-grid" style="grid-template-columns:repeat(4,1fr); margin-top:16px">
           <div class="w-card"><div class="w-h3">Start Diagnostic</div><div class="w-muted small">10-minute baseline test to create your plan.</div></div>
           <div class="w-card"><div class="w-h3">Genre Studios</div><div class="w-muted small">Narrative, Descriptive, Persuasive, Letters.</div></div>
-          <div class="w-card"><div class="w-h3">Sentence Gym</div><div class="w-muted small">Daily 5–10 minute drills for sentence power.</div></div>
+          <div class="w-card" id="cardSentenceGym"><div class="w-h3">Sentence Gym</div><div class="w-muted small">Daily 5–10 minute drills for sentence power.</div></div>
           <div class="w-card"><div class="w-h3">Timed Practice</div><div class="w-muted small">Exam-mode tasks: 10, 20, 30 minutes.</div></div>
         </div>
 
@@ -651,7 +678,7 @@
         </div>
       </section>
 
-      <section id="wtab-lesson-old" style="display:none">
+      <section id="wtab-lesson" style="display:none">
         <div class="w-breadcrumb">Home / Genre Studios / <span style="color:#1f2937;font-weight:600">Narrative</span> / Suspense Opening</div>
         <div class="w-col2">
           <div>
@@ -661,7 +688,7 @@
               <div class="w-grid" style="grid-template-columns:1fr 1fr; margin-top:12px">
                 <div>
                   <div class="w-muted small" style="font-weight:700">Strong opening example:</div>
-                  <div class="w-chipline" style="margin-top:6px">The corridor was too quiet. A door clicked. Then— silence. I held my breath and listened: footsteps, somewhere close.</div>
+                  <div class="w-chipline" style="margin-top:6px">The corridor was too quiet. A door clicked. Then—silence. I held my breath and listened: footsteps, somewhere close.</div>
                   <ul class="w-muted" style="margin-top:8px">
                     <li>Short sentences quicken pace</li>
                     <li>Sensory detail (sound: click, footsteps)</li>
@@ -672,7 +699,7 @@
                   <div class="w-muted small" style="font-weight:700">Weaker opening (for contrast):</div>
                   <div class="w-chipline" style="margin-top:6px">The corridor was long and it had many doors and I was walking and it was dark and scary and I felt worried.</div>
                   <ul class="w-muted" style="margin-top:8px">
-                    <li>Run-on sentence → hard to feel tension</li>
+                    <li>Run-on sentence — hard to feel tension</li>
                     <li>Vague adjectives (dark, scary)</li>
                     <li>No specific detail or rhythm changes</li>
                   </ul>
@@ -729,80 +756,8 @@
           </div>
         </div>
       </section>
-      <div class="card">
-        <h3>Writing Helper</h3>
-        <p class="muted">Draft, practice, and review writing. This scaffold will host your draft: <em>voca_helper_11_writing_mockups_homepage_lesson</em>.</p>
-      </div>
-
-      <div class="tabs" id="writingTabs">
-        <button class="tab active" data-wtab="home" id="wTabHome">Home</button>
-        <button class="tab" data-wtab="lesson" id="wTabLesson">Lesson</button>
-      </div>
-
-      <section id="wtab-home">
-        <div class="grid">
-          <div class="card">
-            <h4>Quick Start</h4>
-            <p class="muted">Start a new lesson or open a recent draft.</p>
-            <div class="row" style="margin-top:8px">
-              <button class="btn primary" id="startLessonBtn">Start Lesson</button>
-              <button class="btn" id="openRecentBtn">Open Recent</button>
-            </div>
-          </div>
-          <div class="card">
-            <h4>Recent Drafts</h4>
-            <div id="recentDrafts" class="muted small">No drafts yet.</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="wtab-lesson" style="display:none">
-        <div class="grid">
-          <div class="card" style="grid-column:1/-1">
-            <div class="row" style="justify-content:space-between; align-items:center">
-              <div>
-                <h4 style="margin:0">Timer</h4>
-                <div class="muted small">10-minute demo</div>
-              </div>
-              <div class="row" style="gap:8px; align-items:center">
-                <div id="wTimer" style="font-weight:800; font-size:20px">10:00</div>
-                <button class="btn primary" id="wTimerStart">Start</button>
-                <button class="btn" id="wTimerPause">Pause</button>
-                <button class="btn ghost" id="wTimerReset">Reset</button>
-              </div>
-            </div>
-          </div>
-          <div class="card" style="grid-column:1/-1">
-            <label>Prompt or Topic</label>
-            <input id="wPrompt" placeholder="e.g., Describe your favorite place and why it matters." />
-          </div>
-          <div class="card">
-            <label>Your Draft</label>
-            <textarea id="wDraft" placeholder="Write here..." style="min-height:220px"></textarea>
-            <div class="row" style="justify-content:flex-end; margin-top:8px">
-              <button class="btn" id="wClear">Clear</button>
-              <button class="btn primary" id="wSaveDraft">Save Draft</button>
-            </div>
-          </div>
-          <div class="card">
-            <h4>Guidance</h4>
-            <p class="muted">Suggestions about structure, clarity, and vocabulary will appear here.</p>
-            <div id="wGuidance" class="muted small">Type in your draft to see guidance.</div>
-            <div class="hr"></div>
-            <h4 style="margin-top:8px">Hints</h4>
-            <ul id="wHints" class="muted small" style="margin:0; padding-left:18px"></ul>
-          </div>
-          <div class="card">
-            <h4>Self-check</h4>
-            <label class="muted small">Tick as you go</label>
-            <div id="wChecklist" style="display:flex; flex-direction:column; gap:8px; margin-top:8px">
-              <label style="display:flex; gap:8px; align-items:center; cursor:pointer"><input type="checkbox" class="wCheck"> Strong opening sentence</label>
-              <label style="display:flex; gap:8px; align-items:center; cursor:pointer"><input type="checkbox" class="wCheck"> Sensory detail (show, not tell)</label>
-              <label style="display:flex; gap:8px; align-items:center; cursor:pointer"><input type="checkbox" class="wCheck"> Varied sentence lengths</label>
-            </div>
-          </div>
-        </div>
-      </section>
+      
+    </div> <!-- /.w-wrap -->
     </section>
 
   <template id="studyBackTpl">
@@ -876,6 +831,79 @@
       const startLessonBtn = document.getElementById('startLessonBtn');
       if (startLessonBtn){ startLessonBtn.addEventListener('click', ()=> setWTab('lesson')); }
 
+      // Writing helper: Today's Plan (progress + animation)
+      const PLAN_KEY = 'writing_plan_progress_v1';
+      const planItems = [
+        { id:'sentenceGym', label:'Sentence Gym', minutes:'3–5 mins' },
+        { id:'miniLesson', label:'Mini-lesson: Suspense Openings', minutes:'5 mins' },
+        { id:'timedWriting', label:'Timed Writing', minutes:'10–12 mins' },
+        { id:'selfCheck', label:'Self-check & Edit', minutes:'2–3 mins' }
+      ];
+      function loadPlan(){ try{ return JSON.parse(localStorage.getItem(PLAN_KEY)||'{}'); }catch{ return {}; } }
+      let planProgress = Object.assign({ sentenceGym:22, miniLesson:0, timedWriting:0, selfCheck:0 }, loadPlan());
+      function savePlan(){ try{ localStorage.setItem(PLAN_KEY, JSON.stringify(planProgress)); }catch{} }
+      function getPct(id){ return Math.max(0, Math.min(100, +planProgress[id]||0)); }
+      function setPct(id, val, opts){ planProgress[id] = Math.max(0, Math.min(100, Math.round(val))); if(!opts||opts.save!==false) savePlan(); updatePlanItem(id); updatePlanResetButton(); }
+      function renderPlan(){
+        const c = document.getElementById('wPlan'); if(!c) return;
+        c.innerHTML = planItems.map(it=>{
+          const pct = getPct(it.id);
+          const done = pct === 100;
+          const icon = done ? '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4 4 8-8"/></svg>' : '';
+          return `<div class="w-plan-item${done?' completed':''}" data-id="${it.id}">
+            <div class="w-plan-meta"><span class="w-plan-label"><span class="w-status" id="w-status-${it.id}">${icon}</span><b>${it.label}</b></span><span class="w-muted small">${it.minutes} · <span class="w-perc" id="w-perc-${it.id}">${pct}%</span></span></div>
+            <div class="w-prog"><div id="w-bar-${it.id}" style="width:${pct}%"></div></div>
+          </div>`;
+        }).join('');
+        c.addEventListener('click', (e)=>{
+          const item = e.target.closest('.w-plan-item'); if(!item) return;
+          const id = item.dataset.id; const cur = getPct(id);
+          setPct(id, cur < 100 ? 100 : 0);
+        });
+        updatePlanResetButton();
+      }
+      function updatePlanItem(id){
+        const pct = getPct(id);
+        const bar = document.getElementById('w-bar-'+id);
+        const num = document.getElementById('w-perc-'+id);
+        const st = document.getElementById('w-status-'+id);
+        const item = document.querySelector(`.w-plan-item[data-id="${id}"]`);
+        if(bar) bar.style.width = pct + '%';
+        if(num) num.textContent = pct + '%';
+        if(st) st.innerHTML = pct===100 ? '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10l4 4 8-8"/></svg>' : '';
+        if(item) item.classList.toggle('completed', pct===100);
+      }
+      function allZero(){ return planItems.every(it => getPct(it.id) === 0); }
+      function allComplete(){ return planItems.every(it => getPct(it.id) === 100); }
+      function updatePlanResetButton(){
+        const r = document.getElementById('wPlanReset');
+        const c = document.getElementById('wPlanCompleteAll');
+        if(r){ const dis = allZero(); r.disabled = dis; r.style.opacity = dis ? '0.5' : '1'; r.style.cursor = dis ? 'not-allowed' : 'pointer'; }
+        if(c){ const disC = allComplete(); c.disabled = disC; c.style.opacity = disC ? '0.5' : '1'; c.style.cursor = disC ? 'not-allowed' : 'pointer'; }
+      }
+      const btnResetPlan = document.getElementById('wPlanReset');
+      if (btnResetPlan){
+        btnResetPlan.addEventListener('click', ()=>{
+          if (allZero()) return;
+          planProgress = { sentenceGym:0, miniLesson:0, timedWriting:0, selfCheck:0 };
+          savePlan();
+          renderPlan();
+          if (typeof toast === 'function') toast('Plan reset');
+        });
+      }
+      const btnCompleteAll = document.getElementById('wPlanCompleteAll');
+      if (btnCompleteAll){
+        btnCompleteAll.addEventListener('click', ()=>{
+          if (allComplete()) return;
+          planProgress = { sentenceGym:100, miniLesson:100, timedWriting:100, selfCheck:100 };
+          savePlan();
+          renderPlan();
+          if (typeof toast === 'function') toast('Plan completed', {type:'success'});
+        });
+      }
+      renderPlan();
+      if (wLesson){ wLesson.addEventListener('click', ()=> setPct('miniLesson', 100)); }
+
       // Writing helper: basic interactions
       const draftEl = document.getElementById('wDraft');
       const guidanceEl = document.getElementById('wGuidance');
@@ -884,7 +912,7 @@
           const text = draftEl.value || '';
           const words = (text.trim().match(/\b\w+\b/g) || []).length;
           const sentences = (text.trim().match(/[.!?]+\s|\n/g) || []).length + (text.trim() ? 1 : 0);
-          guidanceEl.textContent = `${words} words • ${sentences} sentences`;
+          guidanceEl.textContent = `${words} words - ${sentences} sentences`;
           renderHints(text);
         });
       }
@@ -908,7 +936,8 @@
       }
       renderRecentDrafts();
       // Timer controls (10-minute demo)
-      let wTimerRemaining = 10*60; // seconds
+      let wTimerTotal = 10*60; // seconds
+      let wTimerRemaining = wTimerTotal; // seconds
       let wTimerId = null;
       function refreshTimer(){
         const el = document.getElementById('wTimer');
@@ -916,6 +945,8 @@
         const m = String(Math.floor(wTimerRemaining/60)).padStart(2,'0');
         const s = String(wTimerRemaining%60).padStart(2,'0');
         el.textContent = `${m}:${s}`;
+        const pct = Math.min(100, Math.round(((wTimerTotal - wTimerRemaining)/wTimerTotal)*100));
+        setPct('timedWriting', pct, {save:false});
       }
       function tick(){
         if (wTimerRemaining <= 0){ clearInterval(wTimerId); wTimerId=null; return; }
@@ -926,8 +957,23 @@
       const btnReset = document.getElementById('wTimerReset');
       if (btnStart) btnStart.addEventListener('click', ()=>{ if(wTimerId) return; wTimerId = setInterval(tick, 1000); });
       if (btnPause) btnPause.addEventListener('click', ()=>{ if(wTimerId){ clearInterval(wTimerId); wTimerId=null; } });
-      if (btnReset) btnReset.addEventListener('click', ()=>{ if(wTimerId){ clearInterval(wTimerId); wTimerId=null; } wTimerRemaining = 10*60; refreshTimer(); });
+      if (btnReset) btnReset.addEventListener('click', ()=>{ if(wTimerId){ clearInterval(wTimerId); wTimerId=null; } wTimerRemaining = wTimerTotal; setPct('timedWriting', 0); refreshTimer(); });
       refreshTimer();
+
+      // Checklist drives Self-check progress
+      const checklist = document.querySelectorAll('#wChecklist .wCheck');
+      if (checklist.length){
+        const onCheck = ()=>{
+          const total = checklist.length;
+          const checked = Array.from(checklist).filter(c=>c.checked).length;
+          const pct = Math.round((checked/total)*100);
+          setPct('selfCheck', pct);
+        };
+        checklist.forEach(cb=> cb.addEventListener('change', onCheck));
+      }
+      // Sentence Gym card click -> complete
+      const sgCard = document.getElementById('cardSentenceGym');
+      if (sgCard){ sgCard.addEventListener('click', ()=> setPct('sentenceGym', 100)); }
 
       function renderHints(text){
         const list = document.getElementById('wHints');
@@ -3037,7 +3083,32 @@ Expected JSON format:
     $('#setTTS').addEventListener('change', e=>{ prefs.tts = !!e.target.checked; savePrefs(); });
     $('#setKidMode').addEventListener('change', e=>{ prefs.kid = !!e.target.checked; document.body.style.fontSize = prefs.kid? '18px':'16px'; savePrefs(); });
 
-    function toast(msg){ const el = document.createElement('div'); el.textContent=msg; Object.assign(el.style,{position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',background:'#1f2937',color:'#e5e7eb',padding:'10px 14px',borderRadius:'12px',border:'1px solid #334155',zIndex:99}); document.body.appendChild(el); setTimeout(()=> el.remove(), 1400); }
+    // Toast notifications (backwards compatible)
+    function toast(msg, opts){
+      const isNum = typeof opts === 'number';
+      const duration = isNum ? opts : (opts && typeof opts.duration==='number' ? opts.duration : 1600);
+      const type = !isNum && opts && opts.type ? String(opts.type) : 'info';
+      let cont = document.getElementById('toastContainer');
+      if(!cont){
+        cont = document.createElement('div');
+        cont.id = 'toastContainer';
+        Object.assign(cont.style,{position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',display:'flex',flexDirection:'column',gap:'8px',zIndex:9999});
+        document.body.appendChild(cont);
+      }
+      const el = document.createElement('div');
+      el.className = 'toast';
+      el.textContent = msg;
+      const styles = {
+        info:   {bg:'#1f2937', border:'#334155', color:'#e5e7eb'},
+        success:{bg:'#065f46', border:'#10b981', color:'#ecfdf5'},
+        warn:   {bg:'#92400e', border:'#f59e0b', color:'#fff7ed'},
+        error:  {bg:'#7f1d1d', border:'#ef4444', color:'#fee2e2'}
+      }[type] || {bg:'#1f2937', border:'#334155', color:'#e5e7eb'};
+      Object.assign(el.style,{background:styles.bg,color:styles.color,padding:'10px 14px',borderRadius:'12px',border:`1px solid ${styles.border}`,minWidth:'180px',textAlign:'center',boxShadow:'0 6px 20px rgba(0,0,0,0.3)'});
+      cont.appendChild(el);
+      if(duration !== 0){ setTimeout(()=> el.remove(), Math.max(600, duration)); }
+      return el;
+    }
 
     function help(){
       alert(`Quick help:\n\n• Add cards in Manage tab.\n• Study: press Space to reveal, then 1–4 to rate (Again/Hard/Good/Easy).\n• Import/Export JSON or CSV.\n• Everything stays on this device. Share this .html file to distribute.`);
@@ -5101,3 +5172,7 @@ Expected JSON format:
   </script>
 </body>
 </html>
+
+
+
+
