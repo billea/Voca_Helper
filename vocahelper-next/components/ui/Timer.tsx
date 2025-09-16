@@ -8,7 +8,23 @@ import * as React from 'react';
  * - Space/Enter toggles start/pause.
  * - Provides live region updates and role="timer".
  */
-export function Timer({ initialMinutes = 10 }: { initialMinutes?: number }) {
+export function Timer({
+  initialMinutes = 10,
+  onStart,
+  onPause,
+  onReset,
+  onChange,
+}: {
+  initialMinutes?: number;
+  /** Called when timer starts */
+  onStart?: () => void;
+  /** Called when timer pauses */
+  onPause?: () => void;
+  /** Called when timer resets */
+  onReset?: () => void;
+  /** Called whenever remaining seconds change */
+  onChange?: (remainingSec: number, running: boolean) => void;
+}) {
   const total = initialMinutes * 60;
   const [remaining, setRemaining] = React.useState(total);
   const [running, setRunning] = React.useState(false);
@@ -41,10 +57,15 @@ export function Timer({ initialMinutes = 10 }: { initialMinutes?: number }) {
       const ss = Math.floor(s % 60).toString().padStart(2, '0');
       liveRef.current.textContent = `Timer ${m}:${ss}`;
     }
+    onChange?.(Math.max(0, Math.round(remaining)), running);
   }, [remaining]);
 
-  const toggle = () => setRunning((v) => !v);
-  const reset = () => { setRunning(false); setRemaining(total); };
+  const toggle = () => setRunning((v) => {
+    const next = !v;
+    if (next) onStart?.(); else onPause?.();
+    return next;
+  });
+  const reset = () => { setRunning(false); setRemaining(total); onReset?.(); };
   const add = (secs: number) => setRemaining((r) => Math.max(0, Math.min(total, r + secs)));
 
   const minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
@@ -78,4 +99,3 @@ export function Timer({ initialMinutes = 10 }: { initialMinutes?: number }) {
     </div>
   );
 }
-
