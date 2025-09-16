@@ -41,8 +41,13 @@ export default function StrategyLabPage() {
 
   function exportPlan(strategy: StrategyId) {
     const board = plans[strategy] || DEFAULT_BOARDS[strategy];
-    const payload = { strategy, board, exportedAt: new Date().toISOString() };
-    try { localStorage.setItem('vocahelper:export_plan', JSON.stringify(payload)); } catch {}
+    const payload = { strategy, board, exportedAt: new Date().toISOString(), target };
+    try {
+      // Per-lesson key
+      localStorage.setItem(`vocahelper:export_plan:${target.genre}:${target.lesson}`, JSON.stringify(payload));
+      // Back-compat shared key
+      localStorage.setItem('vocahelper:export_plan', JSON.stringify(payload));
+    } catch {}
     toast.show('Plan exported to lesson', { type: 'success' });
   }
 
@@ -80,6 +85,11 @@ export default function StrategyLabPage() {
           onToggle={()=> setExpanded(s=> ({...s, narrative: !s.narrative}))}
           board={plans.narrative || DEFAULT_BOARDS.narrative}
           onChange={(b)=> update('narrative', b)}
+          preset={() => ({
+            ideas: [i('mystery sound'), i('setting detail'), i('reaction')],
+            order: [i('hook'), i('build tension'), i('cliffhanger')],
+            moves: [i('short sentence'), i('sensory sound'), i('dash/colon')],
+          })}
           onExport={()=> exportPlan('narrative')}
           onPrint={()=> printPlan('narrative')}
         />
@@ -88,6 +98,11 @@ export default function StrategyLabPage() {
           onToggle={()=> setExpanded(s=> ({...s, persuasive: !s.persuasive}))}
           board={plans.persuasive || DEFAULT_BOARDS.persuasive}
           onChange={(b)=> update('persuasive', b)}
+          preset={() => ({
+            ideas: [i('Topic sentence'), i('Reason 1 + example'), i('Reason 2 + example')],
+            order: [i('T'), i('R'), i('E'), i('E')],
+            moves: [i('formal tone'), i('modal verbs'), i('call to action')],
+          })}
           onExport={()=> exportPlan('persuasive')}
           onPrint={()=> printPlan('persuasive')}
         />
@@ -96,6 +111,11 @@ export default function StrategyLabPage() {
           onToggle={()=> setExpanded(s=> ({...s, descriptive: !s.descriptive}))}
           board={plans.descriptive || DEFAULT_BOARDS.descriptive}
           onChange={(b)=> update('descriptive', b)}
+          preset={() => ({
+            ideas: [i('3 precise nouns'), i('one personification'), i('sound image')],
+            order: [i('wide to close'), i('contrast detail'), i('final image')],
+            moves: [i('adjective-noun pairs'), i('varied sentence length'), i('figurative language')],
+          })}
           onExport={()=> exportPlan('descriptive')}
           onPrint={()=> printPlan('descriptive')}
         />
@@ -125,28 +145,39 @@ function SelfRegulation() {
   );
 }
 
-function StrategyCard({ title, expanded, onToggle, board, onChange, onExport, onPrint }:{ title:string; expanded:boolean; onToggle:()=>void; board:PlanBoard; onChange:(b:PlanBoard)=>void; onExport:()=>void; onPrint:()=>void }){
+function i(text:string){ return { id: Math.random().toString(36).slice(2,9), text }; }
+
+function StrategyCard({ title, expanded, onToggle, board, onChange, onExport, onPrint, preset }:{ title:string; expanded:boolean; onToggle:()=>void; board:PlanBoard; onChange:(b:PlanBoard)=>void; onExport:()=>void; onPrint:()=>void; preset:()=>PlanBoard }){
   const [text, setText] = React.useState('');
+  // local history stacks (undo/redo)
+  const undoRef = React.useRef<PlanBoard[]>([]);
+  const redoRef = React.useRef<PlanBoard[]>([]);
+  const snapshot = (b: PlanBoard) => JSON.parse(JSON.stringify(b)) as PlanBoard;
   const columns: { id: ColumnId; title: string }[] = [
     { id:'ideas', title:'Ideas' },
     { id:'order', title:'Order' },
     { id:'moves', title:'Language Moves' },
   ];
 
-  function addTo(col: ColumnId){ if(!text.trim()) return; const item: PlanItem = { id: Math.random().toString(36).slice(2,9), text: text.trim() }; onChange({ ...board, [col]: [...board[col], item] }); setText(''); }
+  function commit(next: PlanBoard){ undoRef.current.push(snapshot(board)); redoRef.current = []; onChange(next); }
+
+  function addTo(col: ColumnId){ if(!text.trim()) return; const item: PlanItem = { id: Math.random().toString(36).slice(2,9), text: text.trim() }; commit({ ...board, [col]: [...board[col], item] }); setText(''); }
   function move(col: ColumnId, index: number, dir: 'up'|'down'|'left'|'right'){
     const cols: ColumnId[] = ['ideas','order','moves'];
     const ci = cols.indexOf(col);
     const nextCol = dir==='left'? cols[Math.max(0,ci-1)] : dir==='right'? cols[Math.min(cols.length-1,ci+1)] : col;
-    const clone: PlanBoard = { ideas:[...board.ideas], order:[...board.order], moves:[...board.moves] };
+    const clone: PlanBoard = snapshot(board);
     const arr = clone[col];
     const [item] = arr.splice(index,1);
     if(dir==='up' && index>0){ arr.splice(index-1,0,item); }
     else if(dir==='down' && index < arr.length){ arr.splice(index+1,0,item); }
     else if(dir==='left' || dir==='right') { (clone[nextCol] as PlanItem[]).splice((clone[nextCol] as PlanItem[]).length, 0, item); }
-    onChange(clone);
+    commit(clone);
   }
-  function remove(col: ColumnId, index:number){ const clone: PlanBoard = { ideas:[...board.ideas], order:[...board.order], moves:[...board.moves] }; (clone[col] as PlanItem[]).splice(index,1); onChange(clone); }
+  function remove(col: ColumnId, index:number){ const clone: PlanBoard = snapshot(board); (clone[col] as PlanItem[]).splice(index,1); commit(clone); }
+  function loadPreset(){ const p = preset(); commit(p); }
+  function undo(){ const prev = undoRef.current.pop(); if(prev){ redoRef.current.push(snapshot(board)); onChange(prev); } }
+  function redo(){ const next = redoRef.current.pop(); if(next){ undoRef.current.push(snapshot(board)); onChange(next); } }
 
   return (
     <Card>
@@ -156,6 +187,11 @@ function StrategyCard({ title, expanded, onToggle, board, onChange, onExport, on
           <div className="flex gap-2">
             <input value={text} onChange={(e)=> setText(e.target.value)} placeholder="Add item" className="min-w-0 flex-1 rounded-md border border-slate-300 px-2 py-2 text-sm focus-ring" />
             {columns.map(c=> <button key={c.id} className="focus-ring rounded-md border border-slate-300 px-2 py-2 text-xs" onClick={()=> addTo(c.id)} aria-label={`Add to ${c.title}`}>+ {c.title}</button>)}
+          </div>
+          <div className="flex gap-2">
+            <button className="focus-ring rounded-md border border-slate-300 px-2 py-1 text-xs" onClick={loadPreset} aria-label="Load preset">Load preset</button>
+            <button className="focus-ring rounded-md border border-slate-300 px-2 py-1 text-xs" onClick={undo} aria-label="Undo">Undo</button>
+            <button className="focus-ring rounded-md border border-slate-300 px-2 py-1 text-xs" onClick={redo} aria-label="Redo">Redo</button>
           </div>
           <div className="grid gap-3 grid-cols-3">
             {columns.map(c=> (
@@ -187,4 +223,3 @@ function StrategyCard({ title, expanded, onToggle, board, onChange, onExport, on
     </Card>
   );
 }
-

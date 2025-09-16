@@ -182,7 +182,7 @@ export function StudioLayout(props: StudioProps) {
 
           <Card title="Your prompt">
             <p className="text-sm text-slate-600">{prompt}</p>
-            <ExportedPlanHelper onInsert={(t)=> setDraft(d => (d ? d + "\n\n" + t : t))} />
+            <ExportedPlanHelper genre={genre} lesson={lesson} onInsert={(t)=> setDraft(d => (d ? d + "\n\n" + t : t))} />
             <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto] md:items-start">
               <label htmlFor="studio-draft" className="sr-only">Your draft</label>
               <textarea
@@ -291,14 +291,15 @@ export function StudioLayout(props: StudioProps) {
   );
 }
 
-function ExportedPlanHelper({ onInsert }:{ onInsert:(text:string)=>void }){
+function ExportedPlanHelper({ genre, lesson, onInsert }:{ genre:string; lesson:string; onInsert:(text:string)=>void }){
   const [plan, setPlan] = React.useState<string | null>(null);
   React.useEffect(()=>{
     try{
-      const raw = localStorage.getItem('vocahelper:export_plan');
+      const specific = localStorage.getItem(`vocahelper:export_plan:${genre}:${lesson}`);
+      const raw = specific || localStorage.getItem('vocahelper:export_plan');
       if (raw){ const data = JSON.parse(raw); const b = data.board; const text = `Ideas:\n- ${b.ideas.map((x:any)=>x.text).join('\n- ')}\n\nOrder:\n- ${b.order.map((x:any)=>x.text).join('\n- ')}\n\nLanguage Moves:\n- ${b.moves.map((x:any)=>x.text).join('\n- ')}`; setPlan(text); }
     }catch{}
-  },[]);
+  },[genre, lesson]);
   if (!plan) return null;
   return (
     <div className="mt-2 rounded-md border border-slate-200 p-2 text-xs bg-slate-50">
