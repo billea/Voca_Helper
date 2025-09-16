@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server';
+import { addSubmission } from '@/lib/devStore';
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const id = 'sub_' + Math.random().toString(36).slice(2, 10);
-  // Simple deterministic next step based on genre
   let nextStepTarget = '/sentence-gym';
   if (body?.genre === 'narrative') nextStepTarget = '/genres/narrative/suspense';
   if (body?.genre === 'descriptive') nextStepTarget = '/genres/descriptive/setting';
   if (body?.genre === 'persuasive') nextStepTarget = '/genres/persuasive/letter';
-  return NextResponse.json({ id, ok: true, nextStepTarget });
+  const sub = await addSubmission({
+    genre: String(body.genre || ''),
+    lesson: String(body.lesson || ''),
+    content: String(body.content || ''),
+    wordCount: Number(body.wordCount || 0),
+    durationSec: Number(body.durationSec || 0),
+    nextStepTarget,
+  });
+  return NextResponse.json({ id: sub.id, ok: true, nextStepTarget });
 }
-

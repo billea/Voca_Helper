@@ -55,11 +55,11 @@ export const LESSON_REGISTRY: Registry = {
     setting: {
       genre: 'descriptive',
       lesson: 'setting',
-      title: 'Descriptive — Setting Snapshot',
+      title: 'Descriptive Writing — Setting Snapshot',
       prompt:
-        'Describe a place that suddenly feels different at night. Focus on atmosphere and detail.',
+        'Describe a place that suddenly feels different at night. Focus on atmosphere and precise detail.',
       strongExample:
-        'Moonlight pooled on the tiles. Curtains breathed in and out. In the hallway, the clock chewed seconds, louder than before.',
+        'Moonlight pools on the tiles. Curtains breathe. In the hallway, the clock chews seconds, louder than before.',
       strongPoints: [
         'Concrete images and personification',
         'Sound detail to shape mood',
@@ -88,9 +88,9 @@ export const LESSON_REGISTRY: Registry = {
     letter: {
       genre: 'persuasive',
       lesson: 'letter',
-      title: 'Persuasive — Formal Letter',
+      title: 'Persuasive Writing — Formal Letter',
       prompt:
-        'Write a letter persuading your headteacher to support a school eco-project.',
+        'Write a letter persuading your headteacher to support a school eco‑project.',
       strongExample:
         'Dear Headteacher, Our school can lead the change. With student teams, we can cut waste by half this term—starting with paper.',
       strongPoints: [
