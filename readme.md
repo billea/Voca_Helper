@@ -317,3 +317,52 @@ service cloud.firestore {
 ## Releases
 - Latest tagged release: https://github.com/billea/Voca_Helper/releases/tag/v1.1.0
 - To publish a new release: GitHub → Releases → “Draft a new release” → choose a tag → add notes → Publish.
+
+---
+
+## 9) VocaHelper Next.js app (11+ Writing)
+
+This repo also ships a modern Next.js + TypeScript + Tailwind app under `vocahelper-next/` focused on 11+ writing (Diagnostic, Genre Studios, Sentence Gym).
+
+### 9.1 Local development
+
+```
+cd vocahelper-next
+npm install
+npm run dev
+```
+
+Open http://localhost:3000/.
+
+Key routes:
+- `/` Homepage
+- `/diagnostic` Baseline diagnostic (10-minute draft + 6-item micro-quiz)
+- `/genres` Genre Studios catalog
+- `/genres/narrative/suspense` Sample lesson
+- `/drafts` Saved drafts and submissions
+
+### 9.2 Tailwind & TypeScript
+- Tailwind is configured; global styles live in `app/globals.css`.
+- TypeScript strict mode is enabled in `tsconfig.json`.
+
+### 9.3 Supabase data storage
+
+By default, the app uses Supabase when environment variables are present; otherwise it falls back to a local file store (for dev only).
+
+Setup guide: see `vocahelper-next/SUPABASE.md` for:
+- Required `.env.local` variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+- SQL to create tables `drafts` and `submissions`, enable RLS, and add dev policies
+- Notes for production RLS and per-user access
+
+Quick start:
+```
+cp vocahelper-next/.env.local.example vocahelper-next/.env.local
+# fill in your Supabase URL and anon key
+```
+
+APIs that write to Supabase (with file-store fallback):
+- `POST /api/drafts` ? table `drafts`
+- `POST /api/submissions` ? table `submissions`
+
+Reads:
+- `/drafts` fetches from Supabase (`drafts` & `submissions`); if not configured, reads `vocahelper-next/.data/store.json`.
