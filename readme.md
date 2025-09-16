@@ -366,3 +366,21 @@ APIs that write to Supabase (with file-store fallback):
 
 Reads:
 - `/drafts` fetches from Supabase (`drafts` & `submissions`); if not configured, reads `vocahelper-next/.data/store.json`.
+
+### 9.4 Data storage overview
+
+- Supabase (preferred when env is set)
+  - Tables: `drafts`, `submissions` (see `vocahelper-next/SUPABASE.md` for SQL + RLS)
+  - Used by: Save Draft, Submit, and the Drafts page
+- Local file (dev fallback)
+  - Path: `vocahelper-next/.data/store.json`
+  - Used only when Supabase env vars are absent
+- Browser localStorage (per-lesson autosave)
+  - Draft: `vh_draft_{genre}_{lesson}`
+  - Draft timestamp: `vh_draft_{genre}_{lesson}:savedAt`
+  - Custom checklist: `vh_ck_{genre}_{lesson}`
+- Browser sessionStorage (diagnostic result)
+  - Key: `diag_result_v1`
+- Env vars
+  - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - Copy `.env.local.example` → `.env.local` and fill values
