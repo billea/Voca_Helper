@@ -56,6 +56,8 @@ export function StudioLayout(props: StudioProps) {
   const [customChecklist, setCustomChecklist] = React.useState<string[]>([]);
   const toast = useToast();
   const router = useRouter();
+  const [isSavingLocal, setIsSavingLocal] = React.useState(false);
+  const [savedLocalAt, setSavedLocalAt] = React.useState<string | null>(null);
   const words = (draft.trim().match(/\b\w+\b/g) || []).length;
   const canSubmit = words >= 120 && words <= 400; // client guard
 
@@ -75,9 +77,27 @@ export function StudioLayout(props: StudioProps) {
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // Debounced local autosave of draft with timestamp
   React.useEffect(() => {
-    try { localStorage.setItem(storageKey, draft); } catch {}
+    const handle = setTimeout(() => {
+      try {
+        setIsSavingLocal(true);
+        localStorage.setItem(storageKey, draft);
+        const ts = new Date().toISOString();
+        localStorage.setItem(storageKey + ':savedAt', ts);
+        setSavedLocalAt(ts);
+      } catch {}
+      setIsSavingLocal(false);
+    }, 800);
+    return () => clearTimeout(handle);
   }, [draft, storageKey]);
+  React.useEffect(() => {
+    try {
+      const ts = localStorage.getItem(storageKey + ':savedAt');
+      if (ts) setSavedLocalAt(ts);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // load custom checklist
   const ckKey = `vh_ck_${genre}_${lesson}`;
@@ -175,7 +195,12 @@ export function StudioLayout(props: StudioProps) {
               <button onClick={saveDraft} className="focus-ring rounded-md border border-slate-300 px-3 py-2 text-sm font-medium">Save Draft</button>
               <button disabled={!canSubmit} onClick={submitDraft} aria-disabled={!canSubmit} className="focus-ring rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">Submit</button>
             </div>
-            <p className="mt-1 text-xs text-slate-500">Submit requires 120–400 words.</p>
+            <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+              <span>Submit requires 120–400 words.</span>
+              <span className="ml-auto">
+                {isSavingLocal ? 'Saving…' : savedLocalAt ? `Saved locally at ${new Date(savedLocalAt).toLocaleTimeString()}` : ''}
+              </span>
+            </div>
           </Card>
         </div>
 
