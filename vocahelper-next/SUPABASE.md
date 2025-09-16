@@ -68,6 +68,7 @@ create policy "subs select own" on public.submissions for select to authenticate
 
 - Client: `lib/supabase.ts` exports `getSupabase()` (session persistence enabled).
 - Auth: `components/auth/AuthBar.tsx` provides magic‑link sign‑in/out.
+- OAuth: enable providers (Authentication → Providers) for `GitHub` and/or `Google` and set redirect URL to your site origin (e.g., `http://localhost:3000` for dev). Buttons are available in the AuthBar.
 - APIs:
   - Include the user's access token in `Authorization: Bearer <token>` header. The API forwards it to Supabase so RLS can evaluate `auth.uid()`.
   - `app/api/drafts/route.ts` → inserts into `drafts`
