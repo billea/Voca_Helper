@@ -15,6 +15,7 @@ export function TopNav() {
     { href: "/diagnostic", label: "Diagnostic" },
     { href: "/genres", label: "Genres" },
     { href: "/sentence-gym", label: "Sentence Gym" },
+    { href: "/strategy-lab", label: "Strategy Lab" },
     { href: "/practice", label: "Practice" },
     { href: "/feedback", label: "Feedback" },
     { href: "/parent", label: "Parent" },

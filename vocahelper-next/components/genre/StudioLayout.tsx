@@ -182,6 +182,7 @@ export function StudioLayout(props: StudioProps) {
 
           <Card title="Your prompt">
             <p className="text-sm text-slate-600">{prompt}</p>
+            <ExportedPlanHelper onInsert={(t)=> setDraft(d => (d ? d + "\n\n" + t : t))} />
             <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto] md:items-start">
               <label htmlFor="studio-draft" className="sr-only">Your draft</label>
               <textarea
@@ -286,6 +287,29 @@ export function StudioLayout(props: StudioProps) {
           </Card>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function ExportedPlanHelper({ onInsert }:{ onInsert:(text:string)=>void }){
+  const [plan, setPlan] = React.useState<string | null>(null);
+  React.useEffect(()=>{
+    try{
+      const raw = localStorage.getItem('vocahelper:export_plan');
+      if (raw){ const data = JSON.parse(raw); const b = data.board; const text = `Ideas:\n- ${b.ideas.map((x:any)=>x.text).join('\n- ')}\n\nOrder:\n- ${b.order.map((x:any)=>x.text).join('\n- ')}\n\nLanguage Moves:\n- ${b.moves.map((x:any)=>x.text).join('\n- ')}`; setPlan(text); }
+    }catch{}
+  },[]);
+  if (!plan) return null;
+  return (
+    <div className="mt-2 rounded-md border border-slate-200 p-2 text-xs bg-slate-50">
+      <div className="flex items-center justify-between">
+        <span className="font-semibold text-slate-700">Imported Plan</span>
+        <div className="flex gap-2">
+          <button className="focus-ring rounded-md border border-slate-300 px-2 py-1" onClick={()=> onInsert(plan)}>Insert outline</button>
+          <button className="focus-ring rounded-md border border-slate-300 px-2 py-1" onClick={()=>{ try{ localStorage.removeItem('vocahelper:export_plan'); }catch{}; setPlan(null);} }>Dismiss</button>
+        </div>
+      </div>
+      <pre className="mt-1 whitespace-pre-wrap text-slate-700">{plan}</pre>
     </div>
   );
 }
