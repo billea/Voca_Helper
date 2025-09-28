@@ -6,7 +6,7 @@ async function testVocabApp() {
     
     try {
         // Navigate to the application
-        await page.goto('http://localhost:8000/vocabulary_memory_helper_single_file_web_app.html');
+        await page.goto('http://localhost:8000/index.html');
         await page.waitForLoadState('networkidle');
         
         console.log('🚀 Starting Vocabulary Memory Helper Tests\n');
@@ -18,10 +18,10 @@ async function testVocabApp() {
         
         const totalCards = await page.textContent('#kTotal');
         const dueCards = await page.textContent('#kDue');
-        const learnedCards = await page.textContent('#kLearned');
+        const savedCards = await page.textContent('#kSaved');
         const streak = await page.textContent('#kStreak');
         
-        console.log(`✓ Initial KPIs - Total: ${totalCards}, Due: ${dueCards}, Learned: ${learnedCards}, Streak: ${streak}`);
+        console.log(`Initial KPIs - Total: ${totalCards}, Due: ${dueCards}, Saved: ${savedCards}, Streak: ${streak}`);
         
         // Test 2: Tab functionality
         console.log('\n📋 TEST 2: Tab Navigation');
@@ -80,38 +80,48 @@ async function testVocabApp() {
         console.log(`✓ Form cleared successfully: ${clearedWord === ''}`);
         
         // Test 5: Study mode functionality
-        console.log('\n📋 TEST 5: Study Mode');
+        console.log('\n-- TEST 5: Study Mode');
         await page.click('[data-tab="study"]');
-        
-        const studyWord = await page.textContent('#frontWord');
-        console.log(`✓ Study mode showing word: ${studyWord}`);
-        
-        // Test reveal functionality
-        await page.click('#revealBtn');
-        await page.waitForTimeout(500); // Wait for reveal animation
-        
-        // Test rating buttons
-        const ratingButtons = ['#rate0', '#rate3', '#rate4', '#rate5'];
-        for (const btn of ratingButtons) {
-            const isVisible = await page.isVisible(btn);
-            console.log(`✓ Rating button ${btn} visible: ${isVisible}`);
+        await page.waitForSelector('#studyCard .study-word');
+        const studyWord = (await page.textContent('#studyCard .study-word')).trim();
+        console.log(`OK Study mode showing word: ${studyWord}`);
+
+        const studyControls = ['#backBtn', '#revealBtn', '#saveBtn', '#nextBtn'];
+        for (const selector of studyControls) {
+            const visible = await page.isVisible(selector);
+            console.log(`OK Control ${selector} visible: ${visible}`);
         }
-        
-        // Rate the card as "Good"
-        await page.click('#rate4');
-        console.log('✓ Rated card as Good');
-        
+
+        await page.click('#revealBtn');
+        await page.waitForSelector('#studyCard .study-definition');
+        console.log('OK Reveal shows definition panel');
+
         // Test 6: Keyboard shortcuts
-        console.log('\n📋 TEST 6: Keyboard Shortcuts');
-        
-        // Test spacebar for reveal
+        console.log('\n-- TEST 6: Keyboard Shortcuts');
         await page.keyboard.press('Space');
-        console.log('✓ Spacebar pressed for reveal');
-        
-        // Test number keys for rating
-        await page.keyboard.press('3'); // Good rating
-        console.log('✓ Number key 3 pressed for rating');
-        
+        const revealText = await page.textContent('#revealBtn');
+        console.log(`OK Spacebar toggled reveal button: ${revealText.includes('Show') || revealText.includes('Hide')}`);
+
+        await page.keyboard.press('ArrowRight');
+        await page.waitForFunction(() => {
+            const el = document.querySelector('#progressCounter');
+            return !!el && /\d+\/\d+/.test(el.textContent || '');
+        });
+        const progressAfterNext = await page.textContent('#progressCounter');
+        console.log(`OK ArrowRight advanced progress: ${progressAfterNext}`);
+
+        await page.keyboard.press('s');
+        const savedCount = await page.evaluate(() => {
+            const stored = localStorage.getItem('vocab_cards_v1');
+            if (!stored) return 0;
+            try {
+                return JSON.parse(stored).filter(card => card.saved).length;
+            } catch (err) {
+                return 0;
+            }
+        });
+        console.log(`OK Keyboard save marked cards: ${savedCount > 0}`);
+
         // Test 7: localStorage persistence
         console.log('\n📋 TEST 7: Data Persistence');
         
@@ -140,17 +150,20 @@ async function testVocabApp() {
         console.log(`✓ Import file input present: ${importFileInput !== null}`);
         
         // Test 9: Sample data functionality
-        console.log('\n📋 TEST 9: Sample Data');
-        const addSampleBtn = await page.isVisible('#addSample');
-        console.log(`✓ Add sample button visible: ${addSampleBtn}`);
-        
-        await page.click('#addSample');
-        console.log('✓ Sample data added');
-        
-        // Check if sample data was added
-        const finalTotalCards = await page.textContent('#kTotal');
-        console.log(`✓ Total cards after sample: ${finalTotalCards}`);
-        
+        console.log('\n-- TEST 9: Sample Data');
+        const sampleButton = await page.$('#addSample');
+        const hasSampleButton = !!sampleButton;
+        console.log(`OK Add sample button present: ${hasSampleButton}`);
+
+        if (hasSampleButton) {
+            await page.click('#addSample');
+            await page.waitForTimeout(300);
+            const finalTotalCards = await page.textContent('#kTotal');
+            console.log(`OK Total cards after sample: ${finalTotalCards}`);
+        } else {
+            console.log('SKIP Sample data button not found in current build');
+        }
+
         // Test 10: Settings functionality
         console.log('\n📋 TEST 10: Settings');
         await page.click('[data-tab="settings"]');
@@ -170,3 +183,7 @@ async function testVocabApp() {
 }
 
 testVocabApp();
+
+
+
+

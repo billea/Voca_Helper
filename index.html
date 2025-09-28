@@ -571,6 +571,8 @@
         #writingSection{color:#0f172a}
         #writingSection .w-muted{color:#64748b}
         #writingSection .w-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px}
+        #writingSection .w-card-link{cursor:pointer}
+        #writingSection .w-card-link:focus{outline:2px solid #4f46e5;outline-offset:4px}
         #writingSection .w-grid{display:grid;gap:16px}
         #writingSection .w-hero{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start}
         #writingSection .w-title{font-size:clamp(26px,4.2vw,44px);font-weight:800;letter-spacing:.2px}
@@ -666,7 +668,7 @@
 
         <div class="w-grid" style="grid-template-columns:repeat(4,1fr); margin-top:16px">
           <div class="w-card"><div class="w-h3">Start Diagnostic</div><div class="w-muted small">10-minute baseline test to create your plan.</div></div>
-          <div class="w-card"><div class="w-h3">Genre Studios</div><div class="w-muted small">Narrative, Descriptive, Persuasive, Letters.</div></div>
+          <div class="w-card w-card-link" id="openGenreStudios" role="button" tabindex="0" aria-label="Open Genre Studios lesson"><div class="w-h3">Genre Studios</div><div class="w-muted small">Narrative, Descriptive, Persuasive, Letters.</div></div>
           <div class="w-card" id="cardSentenceGym"><div class="w-h3">Sentence Gym</div><div class="w-muted small">Daily 5–10 minute drills for sentence power.</div></div>
           <div class="w-card"><div class="w-h3">Timed Practice</div><div class="w-muted small">Exam-mode tasks: 10, 20, 30 minutes.</div></div>
         </div>
@@ -828,8 +830,24 @@
         wHome.addEventListener('click', ()=> setWTab('home'));
         wLesson.addEventListener('click', ()=> setWTab('lesson'));
       }
+      const openLessonView = () => {
+        setWTab('lesson');
+        if (wLesson) wLesson.focus();
+      };
       const startLessonBtn = document.getElementById('startLessonBtn');
-      if (startLessonBtn){ startLessonBtn.addEventListener('click', ()=> setWTab('lesson')); }
+      if (startLessonBtn){ startLessonBtn.addEventListener('click', openLessonView); }
+      const previewLessonBtn = document.getElementById('openRecentBtn');
+      if (previewLessonBtn){ previewLessonBtn.addEventListener('click', openLessonView); }
+      const genreStudiosCard = document.getElementById('openGenreStudios');
+      if (genreStudiosCard){
+        genreStudiosCard.addEventListener('click', openLessonView);
+        genreStudiosCard.addEventListener('keydown', (e)=>{
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+            e.preventDefault();
+            openLessonView();
+          }
+        });
+      }
 
       // Writing helper: Today's Plan (progress + animation)
       const PLAN_KEY = 'writing_plan_progress_v1';
